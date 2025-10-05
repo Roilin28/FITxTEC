@@ -1,28 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity, Platform
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesome } from '@expo/vector-icons';
-import colors from './../theme/color';
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FontAwesome } from "@expo/vector-icons";
+import colors from "./../theme/color";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+type RootStackParamList = {
+  Login: undefined;
+  Home: undefined;
+};
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigation =
+    useNavigation<NativeStackNavigationProp<{ Home: undefined }>>();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const onLogin = () => {
-    // TODO: conectar con Firebase Auth
     console.log({ email, password });
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Tabs" as keyof RootStackParamList }],
+    });
   };
 
   const onGoogle = () => {
     // TODO: implementar Google (expo-auth-session o Firebase)
-    console.log('Google sign-in');
+    console.log("Google sign-in");
   };
 
   const onSignup = () => {
     // TODO: navegar a SignUp
-    console.log('Go to SignUp');
+    console.log("Go to SignUp");
   };
 
   return (
@@ -85,13 +102,18 @@ export default function LoginScreen() {
             accessibilityRole="button"
             accessibilityLabel="Continue with Google"
           >
-            <FontAwesome name="google" size={18} color={colors.text} style={{ marginRight: 8 }} />
+            <FontAwesome
+              name="google"
+              size={18}
+              color={colors.text}
+              style={{ marginRight: 8 }}
+            />
             <Text style={styles.googleText}>Continue with Google</Text>
           </TouchableOpacity>
 
           {/* Footer Sign up */}
           <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={styles.footerText}>Don&apos;t have an account? </Text>{" "}
             <TouchableOpacity onPress={onSignup} accessibilityRole="link">
               <Text style={styles.signupLink}>Sign up</Text>
             </TouchableOpacity>
@@ -111,36 +133,36 @@ const styles = StyleSheet.create({
   // centra el “stack” vertical y da espacio arriba como en el mockup
   container: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: 48,
-    backgroundColor: colors.bg
+    backgroundColor: colors.bg,
   },
 
   // título verde y subtítulo
   title: {
     color: colors.primary,
     fontSize: 36,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 0.5,
-    marginTop: 6
+    marginTop: 6,
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 16,
     marginTop: 6,
-    marginBottom: 22
+    marginBottom: 22,
   },
 
   // card centrada, ancho similar al mockup, borde y radio suaves
   card: {
-    width: '100%',
-    maxWidth: 360,         // <- hace que se vea “estrecho” como tu diseño
+    width: "100%",
+    maxWidth: 360, // <- hace que se vea “estrecho” como tu diseño
     backgroundColor: colors.card,
     borderRadius: RADIUS,
     padding: 18,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
   },
 
   // INPUTS
@@ -150,12 +172,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     height: ROW_H,
-    justifyContent: 'center'
+    justifyContent: "center",
   },
   input: {
     color: colors.text,
     paddingHorizontal: 14,
-    fontSize: 15
+    fontSize: 15,
   },
 
   // BOTÓN LOGIN (mismo alto que inputs)
@@ -163,21 +185,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 12,
     height: ROW_H,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 14
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 14,
   },
   primaryBtnText: {
     color: colors.primaryText,
     fontSize: 16,
-    fontWeight: '700'
+    fontWeight: "700",
   },
 
   // Separador fino con “pill” al centro
   separatorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 18
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 18,
   },
   separatorLine: { flex: 1, height: 1, backgroundColor: colors.border },
   separatorText: {
@@ -188,24 +210,29 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4
+    borderRadius: 4,
   },
 
   // Botón Google oscuro, misma altura
   googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1b1e27',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1b1e27",
     borderRadius: 12,
     height: ROW_H,
-    justifyContent: 'center',
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
   },
-  googleText: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  googleText: { color: colors.text, fontSize: 15, fontWeight: "600" },
 
   // footer
-  footerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 18, marginBottom: 4 },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 18,
+    marginBottom: 4,
+  },
   footerText: { color: colors.textMuted },
-  signupLink: { color: colors.primary, fontWeight: '700' }
+  signupLink: { color: colors.primary, fontWeight: "700" },
 });
