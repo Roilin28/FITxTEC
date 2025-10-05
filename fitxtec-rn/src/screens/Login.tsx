@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
@@ -16,11 +15,13 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;
+  Tabs: undefined;
 };
 
 export default function LoginScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<{ Home: undefined }>>();
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
