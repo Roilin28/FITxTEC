@@ -13,6 +13,11 @@ import colors from "./../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+type RootStackParamList = {
+  Login: undefined;
+  Home: undefined;
+};
+
 export default function LoginScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<{ Home: undefined }>>();
@@ -21,7 +26,10 @@ export default function LoginScreen() {
 
   const onLogin = () => {
     console.log({ email, password });
-    navigation.navigate("Home");
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Tabs" as keyof RootStackParamList }],
+    });
   };
 
   const onGoogle = () => {
