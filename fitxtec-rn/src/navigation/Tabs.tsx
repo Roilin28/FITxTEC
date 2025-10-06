@@ -8,6 +8,7 @@ import HomeScreen from "../screens/HomeScreen";
 import WorkoutScreen from "../screens/WorkoutScreen";
 import NotFoundScreen from "../screens/404Screen";
 import RoutinesScreen from "../screens/RoutinesScreen";
+import UserScreen from "../screens/UserScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -78,7 +79,7 @@ export default function Tabs() {
       <Tab.Screen name="Workout" component={WorkoutScreen} />
       <Tab.Screen name="Routines" component={RoutinesScreen} />
       <Tab.Screen name="Progress" component={NotFoundScreen} />
-      <Tab.Screen name="Profile" component={NotFoundScreen} />
+      <Tab.Screen name="Profile" component={UserScreen} />
     </Tab.Navigator>
   );
 }

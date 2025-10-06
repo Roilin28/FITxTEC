@@ -48,7 +48,7 @@ const HomeScreen: React.FC = () => {
           style={styles.hero}
         >
           <View>
-            <Text style={styles.greeting}>Good morning, Luis</Text>
+            <Text style={styles.greeting}>Good morning, John Doe</Text>
             <Text style={styles.motivation}>
               Ready to crush your goals today?
             </Text>
