@@ -2,11 +2,12 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import colors from "./../theme/color";
+import colors from "../theme/color";
 
 import HomeScreen from "../screens/HomeScreen";
 import WorkoutScreen from "../screens/WorkoutScreen";
 import NotFoundScreen from "../screens/404Screen";
+import RoutinesScreen from "../screens/RoutinesScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,7 +20,7 @@ export default function Tabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: colors.bg,
           borderTopColor: colors.border,
           height: 64,
           paddingBottom: 8,
@@ -74,10 +75,10 @@ export default function Tabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Routines" component={NotFoundScreen} />
+      <Tab.Screen name="Workout" component={WorkoutScreen} />
+      <Tab.Screen name="Routines" component={RoutinesScreen} />
       <Tab.Screen name="Progress" component={NotFoundScreen} />
       <Tab.Screen name="Profile" component={NotFoundScreen} />
-      <Tab.Screen name="Workout" component={WorkoutScreen} />
     </Tab.Navigator>
   );
 }

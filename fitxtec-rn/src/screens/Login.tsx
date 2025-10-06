@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
-import colors from "./../theme/color";
+import colors from "../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
@@ -47,7 +47,7 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         {/* Título */}
-        <Text style={styles.title}>FITxUP</Text>
+        <Text style={styles.title}>FITxTEC</Text>
         <Text style={styles.subtitle}>Track your fitness progress</Text>
 
         {/* Card */}
