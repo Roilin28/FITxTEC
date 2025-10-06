@@ -7,8 +7,6 @@ import LoginScreen from "./src/screens/Login";
 import Tabs from "./src/Navigation/Tabs";
 import colors from "./src/theme/color";
 import NotFoundScreen from "./src/screens/404Screen";
-import HomeScreen from "./src/screens/HomeScreen";
-
 const Stack = createNativeStackNavigator();
 
 const navTheme = {
