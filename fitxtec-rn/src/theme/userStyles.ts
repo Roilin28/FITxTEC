@@ -6,7 +6,6 @@ export const userStyles = StyleSheet.create({
         backgroundColor: "#0e0f13",
     },
 
-    // NAVBAR
     navbar: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -14,13 +13,15 @@ export const userStyles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 10,
         paddingBottom: 6,
+        backgroundColor: "transparent",
         borderBottomWidth: 1,
         borderBottomColor: "#0e0f13",
     },
     brand: {
-        color: "#fff",
+        color: "#ffffff",
         fontSize: 20,
         fontWeight: "800",
+        letterSpacing: 0.5,
     },
     profileBtn: {
         padding: 4,

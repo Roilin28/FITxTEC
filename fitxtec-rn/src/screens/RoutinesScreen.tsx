@@ -12,6 +12,9 @@ import styles from "../theme/routinesStyles";
 type RootStackParamList = {
   Home: undefined;
   User: undefined;
+  Workout: { routineId: string };
+  Routines: undefined;
+  RoutineDetails: { routineId: string };
 };
 
 const routines = [
@@ -132,7 +135,14 @@ export default function RoutinesScreen() {
                 <Text style={styles.desc}>{routine.desc}</Text>
 
                 <View style={styles.btnRow}>
-                  <TouchableOpacity style={styles.viewBtn}>
+                  <TouchableOpacity
+                    style={styles.viewBtn}
+                    onPress={() =>
+                      navigation.navigate("RoutineDetails", {
+                        routineId: routine.id,
+                      })
+                    }
+                  >
                     <Ionicons
                       name="eye-outline"
                       size={16}
@@ -141,7 +151,12 @@ export default function RoutinesScreen() {
                     <Text style={styles.viewBtnText}>View</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.startBtn}>
+                  <TouchableOpacity
+                    style={styles.startBtn}
+                    onPress={() =>
+                      navigation.navigate("Workout", { routineId: routine.id })
+                    }
+                  >
                     <Text style={styles.startBtnText}>Start</Text>
                   </TouchableOpacity>
                 </View>

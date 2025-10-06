@@ -12,6 +12,8 @@ type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   User: undefined;
+  Routines: undefined;
+  Calendar: undefined;
 };
 
 const HomeScreen: React.FC = () => {
@@ -111,10 +113,16 @@ const HomeScreen: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.row}>
-            <TouchableOpacity style={styles.secondaryButton}>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => navigation.navigate("Routines")}
+            >
               <Text style={styles.secondaryButtonText}>Choose Routine</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => navigation.navigate("Calendar")}
+            >
               <Ionicons name="calendar-outline" size={22} color="white" />
             </TouchableOpacity>
           </View>
