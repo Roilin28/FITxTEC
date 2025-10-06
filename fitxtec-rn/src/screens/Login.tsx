@@ -14,6 +14,11 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { loginWithEmailPassword } from "../services/login";
 
+type RootStackParamList = {
+  Login: undefined;
+  Home: undefined;
+};
+
 export default function LoginScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<{ Home: undefined }>>();
