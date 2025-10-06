@@ -11,6 +11,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import colors from "../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { loginWithEmailPassword } from "../services/login";
 
 type RootStackParamList = {
   Login: undefined;
@@ -31,6 +32,27 @@ export default function LoginScreen() {
       index: 0,
       routes: [{ name: "Tabs" as keyof RootStackParamList }],
     });
+  //const [loading, setLoading] = useState(false);
+  //const [error, setError] = useState<string | null>(null);
+
+  //const onLogin = async () => {
+  //  if (loading) return;
+  //  setError(null);
+  //  setLoading(true);
+  //  try {
+  //    const user = await loginWithEmailPassword(email, password);
+  //    if (!user) {
+  //      setError("Credenciales inválidas");
+  //    } else {
+  //      console.log("Login: ", user, user.id);
+  //      navigation.navigate("Home");
+  //    }
+  //  } catch (e: any) {
+  //    console.error(e);
+  //    setError("Error al iniciar sesión");
+  //  } finally {
+  //    setLoading(false);
+  //  }
   };
 
   const onGoogle = () => {
@@ -85,8 +107,14 @@ export default function LoginScreen() {
             accessibilityRole="button"
             accessibilityLabel="Login"
           >
-            <Text style={styles.primaryBtnText}>Login</Text>
+            <Text style={styles.primaryBtnText}>{loading ? "Cargando..." : "Login"}</Text>
           </TouchableOpacity>
+
+          {error && (
+            <Text style={styles.errorText} accessibilityLiveRegion="polite">
+              {error}
+            </Text>
+          )}
 
           {/* Separador */}
           <View style={styles.separatorRow}>
@@ -236,4 +264,11 @@ const styles = StyleSheet.create({
   },
   footerText: { color: colors.textMuted },
   signupLink: { color: colors.primary, fontWeight: "700" },
+  errorText: {
+    color: '#ff5a5f',
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: '600',
+  },
 });
