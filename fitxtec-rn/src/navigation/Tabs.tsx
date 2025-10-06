@@ -7,6 +7,7 @@ import colors from "./../theme/color";
 import HomeScreen from "../screens/HomeScreen";
 import WorkoutScreen from "../screens/WorkoutScreen";
 import NotFoundScreen from "../screens/404Screen";
+import ProgressScreen from "../screens/ProgressScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -75,7 +76,7 @@ export default function Tabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Routines" component={NotFoundScreen} />
-      <Tab.Screen name="Progress" component={NotFoundScreen} />
+      <Tab.Screen name="Progress" component={ProgressScreen} />
       <Tab.Screen name="Profile" component={NotFoundScreen} />
       <Tab.Screen name="Workout" component={WorkoutScreen} />
     </Tab.Navigator>

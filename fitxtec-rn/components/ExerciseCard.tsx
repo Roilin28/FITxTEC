@@ -1,24 +1,19 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "./../src/theme/color";
+import colors from "../src/theme/color";
 
-type SetData = {
-  set: number;
-  reps: number;
-  weight: number;
-  rpe: number;
-  done: boolean;
-};
+type SetData = { set: number; reps: number; weight: number; done: boolean };
+type Props = { title: string; sets: number; restSec?: number };
 
-type Props = {
-  title: string;
-  sets: number;
-  restSec?: number;
-};
+/** Tamaños y layout */
+const ROW_H = 40;          // alto de fila (más compacto)
+const BTN = 28;            // tamaño del botón +/- dentro del input
+const VALUE_MIN_W = 34;    // ancho mínimo del número para que no brinque
+const GUTTER = 10;         // separación entre columnas
 
-const ROW_H = 44;
+/** proporciones de columnas (Set chico, Reps/Weight amplios) */
+const COL = { set: 0.5, reps: 1.5, weight: 1.5, done: 0.8 };
 
 export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
   const [rows, setRows] = useState<SetData[]>(
@@ -26,7 +21,6 @@ export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
       set: i + 1,
       reps: 8,
       weight: 40,
-      rpe: 7,
       done: false,
     }))
   );
@@ -60,24 +54,28 @@ export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
       </View>
 
       {/* Table header */}
-      <View style={styles.tableHead}>
-        <Text style={[styles.th, { flex: 0.7 }]}>Set</Text>
-        <Text style={styles.th}>Reps</Text>
-        <Text style={styles.th}>Weight</Text>
-        <Text style={styles.th}>RPE</Text>
-        <Text style={[styles.th, { flex: 0.7 }]}>Done</Text>
+      <View style={[styles.tableHead, { columnGap: GUTTER }]}>
+        <Text style={[styles.th, { flex: COL.set }]}>Set</Text>
+        <Text style={[styles.th, { flex: COL.reps }]}>Reps</Text>
+        <Text style={[styles.th, { flex: COL.weight }]}>Weight</Text>
+        <Text style={[styles.th, { flex: COL.done }]}>
+          Done
+        </Text>
       </View>
 
       {/* Rows */}
       {rows.map((r, i) => (
-        <View key={i} style={[styles.row, r.done && styles.rowDone]}>
-          {/* Set */}
-          <View style={[styles.cell, { flex: 0.7 }]}>
+        <View
+          key={i}
+          style={[styles.row, { columnGap: GUTTER }, r.done && styles.rowDone]}
+        >
+          {/* Set (pill compacto) */}
+          <View style={{ flex: COL.set }}>
             <Text style={styles.setPill}>{r.set}</Text>
           </View>
 
-          {/* Reps counter */}
-          <View style={styles.cell}>
+          {/* Reps: input con - valor + dentro de la misma caja */}
+          <View style={{ flex: COL.reps }}>
             <Counter
               value={r.reps}
               onMinus={() => bump(i, "reps", -1)}
@@ -85,8 +83,8 @@ export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
             />
           </View>
 
-          {/* Weight counter */}
-          <View style={styles.cell}>
+          {/* Weight */}
+          <View style={{ flex: COL.weight }}>
             <Counter
               value={r.weight}
               onMinus={() => bump(i, "weight", -2.5)}
@@ -94,30 +92,8 @@ export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
             />
           </View>
 
-          {/* RPE slider */}
-          <View style={[styles.cell, { minWidth: 100 }]}>
-            <View style={styles.rpeRow}>
-              <Text style={styles.rpeValue}>{r.rpe}</Text>
-              <Slider
-                style={{ flex: 1 }}
-                minimumValue={6}
-                maximumValue={10}
-                step={1}
-                value={r.rpe}
-                minimumTrackTintColor={colors.primary}
-                maximumTrackTintColor={"#333846"}
-                thumbTintColor={colors.primary}
-                onValueChange={(v: any) =>
-                  setRows((prev) =>
-                    prev.map((x, j) => (j === i ? { ...x, rpe: v } : x))
-                  )
-                }
-              />
-            </View>
-          </View>
-
-          {/* Done */}
-          <View style={[styles.cell, { flex: 0.7, alignItems: "flex-end" }]}>
+          {/* Done al extremo derecho */}
+          <View style={{ flex: COL.done, alignItems: "flex-end" }}>
             <TouchableOpacity
               onPress={() => toggleDone(i)}
               style={[styles.doneBtn, r.done && styles.doneBtnOn]}
@@ -133,7 +109,7 @@ export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
         </View>
       ))}
 
-      {/* Rest info */}
+      {/* Rest */}
       <View style={styles.restRow}>
         <Ionicons name="time-outline" color={colors.textMuted} size={16} />
         <Text style={styles.restText}> Rest: {restSec}s</Text>
@@ -142,6 +118,7 @@ export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
   );
 }
 
+/** Input compacto: [-]  value  [+] dentro de la MISMA caja */
 function Counter({
   value,
   onMinus,
@@ -153,34 +130,26 @@ function Counter({
 }) {
   return (
     <View style={counterStyles.wrap}>
-      <RoundBtn icon="remove" onPress={onMinus} />
+      <TouchableOpacity
+        onPress={onMinus}
+        activeOpacity={0.85}
+        style={counterStyles.btn}
+      >
+        <Ionicons name="remove" size={16} color={colors.text} />
+      </TouchableOpacity>
+
       <Text style={counterStyles.value}>
         {Number.isInteger(value) ? value : value.toFixed(1)}
       </Text>
-      <RoundBtn icon="add" onPress={onPlus} />
-    </View>
-  );
-}
 
-function RoundBtn({
-  icon,
-  onPress,
-}: {
-  icon: "add" | "remove";
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.85}
-      style={counterStyles.btn}
-    >
-      <Ionicons
-        name={icon === "add" ? "add" : "remove"}
-        size={18}
-        color={colors.text}
-      />
-    </TouchableOpacity>
+      <TouchableOpacity
+        onPress={onPlus}
+        activeOpacity={0.85}
+        style={counterStyles.btn}
+      >
+        <Ionicons name="add" size={16} color={colors.text} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -217,7 +186,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     marginBottom: 6,
   },
-  th: { flex: 1, color: colors.textMuted, fontSize: 12 },
+  th: { color: colors.textMuted, fontSize: 12, textAlign: "center"},
 
   row: {
     flexDirection: "row",
@@ -230,23 +199,20 @@ const styles = StyleSheet.create({
   },
   rowDone: { backgroundColor: "#1d2a10" },
 
-  cell: { flex: 1, paddingHorizontal: 4 },
-
   setPill: {
     backgroundColor: "#222632",
     color: colors.text,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    minWidth: 30,
+    textAlign: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     borderRadius: 10,
     overflow: "hidden",
   },
 
-  rpeRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  rpeValue: { color: colors.text, width: 16, textAlign: "center" },
-
   doneBtn: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
@@ -262,19 +228,19 @@ const styles = StyleSheet.create({
 
 const counterStyles = StyleSheet.create({
   wrap: {
-    flexDirection: "row",
-    alignItems: "center",
+    height: ROW_H,
     backgroundColor: "#0f1118",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
-    height: ROW_H - 8,
-    paddingHorizontal: 6,
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 6,
   },
   btn: {
-    width: 32,
-    height: 32,
+    width: BTN,
+    height: BTN,
     borderRadius: 8,
     backgroundColor: "#1a1e29",
     alignItems: "center",
@@ -284,8 +250,8 @@ const counterStyles = StyleSheet.create({
   },
   value: {
     color: colors.text,
-    minWidth: 28,
+    minWidth: VALUE_MIN_W,
     textAlign: "center",
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

@@ -4,7 +4,7 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import LoginScreen from "./src/screens/Login";
-import Tabs from "./src/navigation/Tabs";
+import Tabs from "./src/Navigation/Tabs";
 import colors from "./src/theme/color";
 import NotFoundScreen from "./src/screens/404Screen";
 import HomeScreen from "./src/screens/HomeScreen";
