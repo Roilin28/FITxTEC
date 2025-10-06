@@ -5,7 +5,14 @@ export interface Usuario {
   id: string;
   email: string;
   contrasenna: string;
-  // Otros campos cuando se agreguen
+  // Campos opcionales de perfil
+  nombre?: string;
+  edad?: number;
+  objetivo?: string;
+  experiencia?: string;
+  workoutsPorSemana?: string;
+  unidadPeso?: string;
+  unidadDistancia?: string;
 }
 
 export async function loginWithEmailPassword(email: string, contrasenna: string): Promise<Usuario | null> {

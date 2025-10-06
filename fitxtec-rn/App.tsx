@@ -7,6 +7,7 @@ import LoginScreen from "./src/screens/Login";
 import Tabs from "./src/navigation/Tabs";
 import colors from "./src/theme/color";
 import NotFoundScreen from "./src/screens/404Screen";
+import { AuthProvider } from "./src/services/AuthContext";
 const Stack = createNativeStackNavigator();
 
 const navTheme = {
@@ -18,13 +19,15 @@ export default function App() {
   return (
     <>
       <StatusBar style="light" />
-      <NavigationContainer theme={navTheme}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="NotFound" component={NotFoundScreen} />
-          <Stack.Screen name="Tabs" component={Tabs} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <NavigationContainer theme={navTheme}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="NotFound" component={NotFoundScreen} />
+            <Stack.Screen name="Tabs" component={Tabs} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthProvider>
     </>
   );
 }

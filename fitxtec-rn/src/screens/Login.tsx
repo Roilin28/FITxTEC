@@ -12,6 +12,7 @@ import colors from "../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { loginWithEmailPassword } from "../services/login";
+import { useAuth } from "../services/AuthContext";
 
 type RootStackParamList = {
   Login: undefined;
@@ -22,37 +23,36 @@ type RootStackParamList = {
 export default function LoginScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { setUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onLogin = () => {
-    console.log({ email, password });
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Tabs" as keyof RootStackParamList }],
-    });
-    //const [loading, setLoading] = useState(false);
-    //const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    //const onLogin = async () => {
-    //  if (loading) return;
-    //  setError(null);
-    //  setLoading(true);
-    //  try {
-    //    const user = await loginWithEmailPassword(email, password);
-    //    if (!user) {
-    //      setError("Credenciales inválidas");
-    //    } else {
-    //      console.log("Login: ", user, user.id);
-    //      navigation.navigate("Home");
-    //    }
-    //  } catch (e: any) {
-    //    console.error(e);
-    //    setError("Error al iniciar sesión");
-    //  } finally {
-    //    setLoading(false);
-    //  }
+  const onLogin = async () => {
+    if (loading) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const user = await loginWithEmailPassword(email, password);
+      if (!user) {
+        setError("Credenciales inválidas");
+      } else {
+        console.log("Login: ", user, user.id);
+        setUser(user);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Tabs" as keyof RootStackParamList }],
+        });
+      }
+    } catch (e: any) {
+      console.error(e);
+      setError("Error al iniciar sesión");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onGoogle = () => {
@@ -106,42 +106,42 @@ export default function LoginScreen() {
             style={styles.primaryBtn}
             accessibilityRole="button"
             accessibilityLabel="Login"
-            //>
-            //</View>  <Text style={styles.primaryBtnText}>{loading ? "Cargando..." : "Login"}</Text>
-            //</TouchableOpacity>
+          >
+            <Text style={styles.primaryBtnText}>{loading ? "Cargando..." : "Login"}</Text>
+          </TouchableOpacity>
 
-            //{error && (
-            //  <Text style={styles.errorText} accessibilityLiveRegion="polite">
-            //    {error}
-            //  </Text>
-            //)}
+          {error && (
+            <Text style={styles.errorText} accessibilityLiveRegion="polite">
+              {error}
+            </Text>
+          )}
 
-            //{/* Separador */}
-            //<View style={styles.separatorRow}>
-            //  <View style={styles.separatorLine} />
-            //  <Text style={styles.separatorText}>OR CONTINUE WITH</Text>
-            //  <View style={styles.separatorLine} />
-            //</View>
+          {/* Separador */}
+          <View style={styles.separatorRow}>
+            <View style={styles.separatorLine} />
+            <Text style={styles.separatorText}>OR CONTINUE WITH</Text>
+            <View style={styles.separatorLine} />
+          </View>
 
-            //{/* Google */}
-            //<TouchableOpacity
-            //  onPress={onGoogle}
-            //  activeOpacity={0.9}
-            //  style={styles.googleBtn}
-            //  accessibilityRole="button"
-            //  accessibilityLabel="Continue with Google"
-            //>
-            //  <FontAwesome
-            //    name="google"
-            //    size={18}
-            //    color={colors.text}
-            //    style={{ marginRight: 8 }}
-            //  />
-            //</View>  <Text style={styles.googleText}>Continue with Google</Text>
-            //</TouchableOpacity>
-          ></TouchableOpacity>
+          {/* Google */}
+          <TouchableOpacity
+            onPress={onGoogle}
+            activeOpacity={0.9}
+            style={styles.googleBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
+          >
+            <FontAwesome
+              name="google"
+              size={18}
+              color={colors.text}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.googleText}>Continue with Google</Text>
+          </TouchableOpacity>
+
           <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Don&apos;t have an account? </Text>{" "}
+            <Text style={styles.footerText}>Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={onSignup} accessibilityRole="link">
               <Text style={styles.signupLink}>Sign up</Text>
             </TouchableOpacity>
