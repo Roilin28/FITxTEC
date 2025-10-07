@@ -34,7 +34,7 @@ export default function WorkoutScreen() {
     const fetchRutina = async () => {
       setLoading(true);
       try {
-        const data = await getRutinaDeep("zEC0iAbFCe3lEynKmTTg");
+        const data = await getRutinaDeep(routineId);
         setRutina(data);
       } catch (e) {
         console.error("Error al obtener rutina:", e);

@@ -27,7 +27,6 @@ export interface DiaRutina {
 }
 
 export interface Rutina {
-  rutinaId: string;
   nombre: string;
   cantidadDias: number;
   tiempoAproximado: string;
