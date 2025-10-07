@@ -12,6 +12,7 @@ type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   User: undefined;
+  Workout: undefined;
   Routines: undefined;
   Calendar: undefined;
 };
@@ -81,20 +82,54 @@ const HomeScreen: React.FC = () => {
           </View>
         </MotiView>
 
-        {/* Upcoming Workouts (Horizontal Carousel) */}
+        {/* Weekly Workouts*/}
         <View style={styles.daysSection}>
-          <Text style={styles.sectionTitle}>Upcoming Workouts</Text>
+          <Text style={styles.sectionTitle}>Weekly Workouts</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.daysScroll}
           >
-            {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
-              <View key={i} style={styles.dayCard}>
-                <Text style={styles.dayText}>{day}</Text>
-                <Ionicons name="checkmark-circle" size={22} color="#7EE300" />
-              </View>
-            ))}
+            {[
+              { day: "Mon", status: "done" },
+              { day: "Tue", status: "done" },
+              { day: "Wed", status: "rest" },
+              { day: "Thu", status: "pending" },
+              { day: "Fri", status: "pending" },
+              { day: "Sat", status: "rest" },
+              { day: "Sun", status: "rest" },
+            ].map(({ day, status }, i) => {
+              let icon = "ellipse-outline";
+              let color = "#555";
+              let backgroundColor = "#1b1e27";
+
+              if (status === "done") {
+                icon = "checkmark-circle";
+                color = "#7EE300";
+                backgroundColor = "#182016";
+              } else if (status === "rest") {
+                icon = "bed-outline";
+                color = "#777";
+                backgroundColor = "#1a1d24";
+              } else if (status === "pending") {
+                icon = "time-outline";
+                color = "#f5b342";
+                backgroundColor = "#251f13";
+              }
+
+              return (
+                <View
+                  key={i}
+                  style={[
+                    styles.dayCard,
+                    { backgroundColor, borderColor: color + "33" },
+                  ]}
+                >
+                  <Text style={styles.dayText}>{day}</Text>
+                  <Ionicons name={icon} size={22} color={color} />
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -108,7 +143,10 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.title}>Push Day - Upper Body</Text>
           <Text style={styles.subtitle}>4 exercises • 45 min estimated</Text>
 
-          <TouchableOpacity style={styles.startButton}>
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={() => navigation.navigate("Workout")}
+          >
             <Text style={styles.startButtonText}>Start Workout</Text>
           </TouchableOpacity>
 

@@ -10,6 +10,8 @@ import RoutinesScreen from "./src/screens/RoutinesScreen";
 import colors from "./src/theme/color";
 import NotFoundScreen from "./src/screens/404Screen";
 import UserScreen from "./src/screens/UserScreen";
+import CalendarScreen from "./src/screens/CalendarScreen";
+
 const Stack = createNativeStackNavigator();
 
 const navTheme = {
@@ -30,6 +32,7 @@ export default function App() {
           <Stack.Screen name="Workout" component={WorkoutScreen} />
           <Stack.Screen name="Routines" component={RoutinesScreen} />
           <Stack.Screen name="RoutineDetails" component={RoutinesScreen} />
+          <Stack.Screen name="Calendar" component={CalendarScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </>
