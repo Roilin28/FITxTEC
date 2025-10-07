@@ -14,10 +14,23 @@ import { db } from "./firebase";
 
 /* ================== Interfaces ================== */
 
-export interface Rutina {
+export interface EjercicioDia {
+  id?: string;
   nombre: string;
-  cantidadDias: number;        // 4
-  tiempoAproximado: string;    // "60-75 min"
+  series: number;
+}
+
+export interface DiaRutina {
+  id?: string;
+  nombre: string;
+  ejercicios?: EjercicioDia[];
+}
+
+export interface Rutina {
+  rutinaId: string;
+  nombre: string;
+  cantidadDias: number;
+  tiempoAproximado: string;
   nivelDificultad: "Beginner" | "Intermediate" | "Advanced";
   descripcion: string;
   notas?: string | null;
@@ -25,13 +38,8 @@ export interface Rutina {
   updatedAt?: number;
 }
 
-export interface DiaRutina {
-  nombre: string;              // "Upper Body Workout"
-}
-
-export interface EjercicioDia {
-  nombre: string;              // "Pull Ups"
-  series: number;              // 3,4...
+export interface RutinaCompleta extends Rutina {
+  dias: DiaRutina[];
 }
 
 /* ================== Helpers ================== */
@@ -190,4 +198,3 @@ export async function getRutinaDeep(rutinaId: string) {
 
   return { ...r, dias };
 }
-

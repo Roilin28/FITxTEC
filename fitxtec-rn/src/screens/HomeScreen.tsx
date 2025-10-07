@@ -61,7 +61,7 @@ const HomeScreen: React.FC = () => {
         {/* Weekly Progress */}
         <View style={styles.progressSection}>
           <View style={styles.progressContainer}>
-            <View style={[styles.progressFill, { width: "70%" }]} />
+            <View style={[styles.progressFill, { width: "50%" }]} />
           </View>
           <Text style={styles.progressLabel}>3 of 4 workouts completed</Text>
         </View>
@@ -140,7 +140,7 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.headerText}>Today&apos;s Workout</Text>
           </View>
 
-          <Text style={styles.title}>Push Day - Upper Body</Text>
+          <Text style={styles.title}>Lower Day - Upper/Lower Workout</Text>
           <Text style={styles.subtitle}>4 exercises • 45 min estimated</Text>
 
           <TouchableOpacity
