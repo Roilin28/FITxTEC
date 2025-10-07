@@ -29,26 +29,35 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onLogin = async () => {
-    if (loading) return;
-    setError(null);
-    setLoading(true);
-    try {
-      const user = await loginWithEmailPassword(email, password);
-      if (!user) {
-        setError("Credenciales inválidas");
-      } else {
-        console.log("Login: ", user, user.id);
-        navigation.navigate("Home");
-      }
-    } catch (e: any) {
-      console.error(e);
-      setError("Error al iniciar sesión");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const onLogin = async () => {
+  //   if (loading) return;
+  //   setError(null);
+  //   setLoading(true);
+  //   try {
+  //     const user = await loginWithEmailPassword(email, password);
+  //     if (!user) {
+  //       setError("Credenciales inválidas");
+  //     } else {
+  //       console.log("Login: ", user, user.id);
+  //       navigation.navigate("Home");
+  //     }
+  //   } catch (e: any) {
+  //     console.error(e);
+  //     setError("Error al iniciar sesión");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
+  const onLogin = () => {
+    console.log({ email, password });
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Tabs" as keyof RootStackParamList }],
+    });
+  }; 
+
+  
   const onGoogle = () => {
     // TODO: implementar Google (expo-auth-session o Firebase)
     console.log("Google sign-in");
