@@ -1,0 +1,172 @@
+import { StyleSheet } from "react-native";
+import colors from "./color";
+
+export const userStyles = StyleSheet.create({
+    safe: {
+        flex: 1,
+        backgroundColor: "#0e0f13",
+    },
+
+    // NAVBAR
+    navbar: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 6,
+        borderBottomWidth: 1,
+        borderBottomColor: "#0e0f13",
+    },
+    brand: {
+        color: "#fff",
+        fontSize: 20,
+        fontWeight: "800",
+    },
+    profileBtn: {
+        padding: 4,
+    },
+
+    // 🔹 SECCIONES GENERALES
+    section: {
+        backgroundColor: "#15171f",
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: "#2b2b2b",
+        marginBottom: 20,
+        padding: 18,
+    },
+    sectionHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 12,
+    },
+    sectionTitle: {
+        color: "#fff",
+        fontWeight: "700",
+        fontSize: 16,
+    },
+
+    // 🔹 PERFIL
+    profileInfo: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 16,
+        gap: 12,
+    },
+    avatar: {
+        backgroundColor: "#9EFF00",
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    avatarText: {
+        color: "#0b0f0a",
+        fontWeight: "800",
+        fontSize: 18,
+    },
+    profileName: {
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: "700",
+    },
+    profileEmail: {
+        color: "#aaa",
+        fontSize: 12,
+    },
+    badge: {
+        backgroundColor: "#333",
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 6,
+        marginTop: 4,
+    },
+    badgeText: {
+        color: "#9EFF00",
+        fontSize: 11,
+        fontWeight: "600",
+    },
+
+    // 🔹 INPUTS Y FORMULARIOS
+    inputGroup: {
+        gap: 8,
+    },
+    label: {
+        color: "#ccc",
+        fontSize: 13,
+        marginTop: 6,
+    },
+    input: {
+        backgroundColor: "#1a1c24",
+        borderRadius: 10,
+        padding: 10,
+        color: "#fff",
+        fontSize: 14,
+        borderWidth: 1,
+        borderColor: "#2f2f2f",
+    },
+
+    // 🔹 SWITCHES / NOTIFICACIONES
+    switchRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 10,
+    },
+    switchLabel: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "500",
+    },
+
+    // 🔹 ACCIONES FINALES
+    actions: {
+        gap: 10,
+        marginBottom: 40,
+    },
+    actionBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#1b1e27",
+        borderWidth: 1,
+        borderColor: "#2f2f2f",
+        borderRadius: 10,
+        padding: 12,
+        gap: 8,
+    },
+    actionText: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    logoutBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#d93636",
+        borderRadius: 10,
+        padding: 12,
+        gap: 8,
+        justifyContent: "center",
+    },
+logoutText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+},
+primaryBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+},
+primaryBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+},
+});

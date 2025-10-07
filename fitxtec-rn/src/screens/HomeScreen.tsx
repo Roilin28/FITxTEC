@@ -1,15 +1,13 @@
-import React, { use } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import React from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { MotiView } from "moti";
+import styles from "../theme/homeStyles";
+import { local_Notification_Start_Workout } from "../services/notifications";
 
 type RootStackParamList = {
   Login: undefined;
@@ -23,6 +21,11 @@ const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <LinearGradient
+        colors={["#0e0f13", "#10131b", "#151820"]}
+        style={styles.gradient}
+      />
+
       {/* Navbar */}
       <View style={styles.navbar}>
         <Text style={styles.brand}>FITxTEC</Text>
@@ -30,50 +33,84 @@ const HomeScreen: React.FC = () => {
           style={styles.profileBtn}
           onPress={() => navigation.navigate("User")}
         >
-          <Ionicons name="person-circle-outline" size={28} color="#9EFF00" />
+          <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { flexGrow: 1, justifyContent: "center" },
-        ]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Ionicons name="calendar-outline" size={22} color="#9EFF00" />
-          <Text style={styles.headerText}>Today&apos;s Workout</Text>
+        {/* Hero Section */}
+        <MotiView
+          from={{ opacity: 0, translateY: 15 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ delay: 150 }}
+          style={styles.hero}
+        >
+          <View>
+            <Text style={styles.greeting}>Good morning, John Doe</Text>
+            <Text style={styles.motivation}>
+              Ready to crush your goals today?
+            </Text>
+          </View>
+        </MotiView>
+
+        {/* Weekly Progress */}
+        <View style={styles.progressSection}>
+          <View style={styles.progressContainer}>
+            <View style={[styles.progressFill, { width: "70%" }]} />
+          </View>
+          <Text style={styles.progressLabel}>3 of 4 workouts completed</Text>
         </View>
 
-        {/* Workout Card */}
-        <View style={styles.card}>
-          <Text style={styles.title}>Push Day - Upper Body</Text>
+        {/* AI Recommendation */}
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ delay: 300 }}
+          style={styles.aiCard}
+        >
+          <Ionicons name="sparkles-outline" size={22} color="#7EE300" />
+          <View style={{ flex: 1, marginLeft: 10 }}>
+            <Text style={styles.aiTitle}>AI Recommendation</Text>
+            <Text style={styles.aiText}>
+              Add 5 min of warm-up to boost your muscle activation.
+            </Text>
+          </View>
+        </MotiView>
 
-          <View style={styles.statusBox}>
-            <Text style={styles.statusText}>In Progress</Text>
+        {/* Upcoming Workouts (Horizontal Carousel) */}
+        <View style={styles.daysSection}>
+          <Text style={styles.sectionTitle}>Upcoming Workouts</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.daysScroll}
+          >
+            {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
+              <View key={i} style={styles.dayCard}>
+                <Text style={styles.dayText}>{day}</Text>
+                <Ionicons name="checkmark-circle" size={22} color="#7EE300" />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Today’s Workout */}
+        <View style={styles.workoutContainer}>
+          <View style={styles.header}>
+            <Ionicons name="calendar-outline" size={22} color="#7EE300" />
+            <Text style={styles.headerText}>Today&apos;s Workout</Text>
           </View>
 
+          <Text style={styles.title}>Push Day - Upper Body</Text>
           <Text style={styles.subtitle}>4 exercises • 45 min estimated</Text>
 
-          {/* Goals */}
-          <View style={styles.goalBox}>
-            <View style={styles.goalHeader}>
-              <Ionicons name="bullseye-outline" size={20} color="#9EFF00" />
-              <Text style={styles.goalTitle}>This Week&apos;s Goals</Text>
-            </View>
-
-            <Text style={styles.goalSubtitle}>Complete 4 workouts</Text>
-            <Text style={styles.goalProgressText}>2/4</Text>
-
-            <View style={styles.progressBarBackground}>
-              <View style={styles.progressBarFill} />
-            </View>
-          </View>
-
-          {/* Buttons */}
-          <TouchableOpacity style={styles.startButton}>
+          <TouchableOpacity 
+          style={styles.startButton}
+          onPress={() => local_Notification_Start_Workout()}
+          >
             <Text style={styles.startButtonText}>Start Workout</Text>
           </TouchableOpacity>
 
@@ -92,114 +129,3 @@ const HomeScreen: React.FC = () => {
 };
 
 export default HomeScreen;
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: "black",
-  },
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 6,
-    backgroundColor: "#0A0A0A",
-    borderBottomWidth: 1,
-    borderBottomColor: "#1F1F1F",
-  },
-  brand: {
-    color: "#9EFF00",
-    fontSize: 20,
-    fontWeight: "800",
-    letterSpacing: 0.5,
-  },
-  profileBtn: {
-    padding: 4,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 15,
-  },
-  headerText: { color: "#ccc", fontSize: 16, marginLeft: 8 },
-  card: {
-    backgroundColor: "#121212",
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-  },
-  title: { color: "white", fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  statusBox: {
-    backgroundColor: "#2b2b2b",
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  statusText: { color: "#ddd", fontSize: 13 },
-  subtitle: { color: "#888", fontSize: 13, marginBottom: 20 },
-  goalBox: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
-  },
-  goalHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
-  goalTitle: { color: "white", fontWeight: "600", marginLeft: 6 },
-  goalSubtitle: { color: "#aaa", fontSize: 13 },
-  goalProgressText: { color: "#777", fontSize: 12, marginBottom: 6 },
-  progressBarBackground: {
-    width: "100%",
-    height: 6,
-    backgroundColor: "#444",
-    borderRadius: 3,
-  },
-  progressBarFill: {
-    width: "50%",
-    height: "100%",
-    backgroundColor: "#9EFF00",
-    borderRadius: 3,
-  },
-  startButton: {
-    backgroundColor: "#9EFF00",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  startButtonText: {
-    color: "black",
-    fontWeight: "700",
-    textAlign: "center",
-    fontSize: 16,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  secondaryButton: {
-    flex: 1,
-    backgroundColor: "#9EFF00",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  secondaryButtonText: { color: "black", fontWeight: "700", fontSize: 15 },
-  iconButton: {
-    flex: 1,
-    backgroundColor: "#1E1E1E",
-    borderWidth: 1,
-    borderColor: "#333",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-});

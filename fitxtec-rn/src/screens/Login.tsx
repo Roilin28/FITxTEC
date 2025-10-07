@@ -5,23 +5,26 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
-import colors from "./../theme/color";
+import colors from "../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { loginWithEmailPassword } from "../services/login";
+import { useAuth } from "../services/AuthContext";
 
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;
+  Tabs: undefined;
 };
 
 export default function LoginScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<{ Home: undefined }>>();
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { setUser } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -38,7 +41,11 @@ export default function LoginScreen() {
         setError("Credenciales inválidas");
       } else {
         console.log("Login: ", user, user.id);
-        navigation.navigate("Home");
+        setUser(user);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Tabs" as keyof RootStackParamList }],
+        });
       }
     } catch (e: any) {
       console.error(e);
@@ -56,6 +63,7 @@ export default function LoginScreen() {
   const onSignup = () => {
     // TODO: navegar a SignUp
     console.log("Go to SignUp");
+    navigation.navigate("SignUp1" as never);
   };
 
   return (
@@ -133,9 +141,8 @@ export default function LoginScreen() {
             <Text style={styles.googleText}>Continue with Google</Text>
           </TouchableOpacity>
 
-          {/* Footer Sign up */}
           <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Don&apos;t have an account? </Text>{" "}
+            <Text style={styles.footerText}>Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={onSignup} accessibilityRole="link">
               <Text style={styles.signupLink}>Sign up</Text>
             </TouchableOpacity>
@@ -258,10 +265,10 @@ const styles = StyleSheet.create({
   footerText: { color: colors.textMuted },
   signupLink: { color: colors.primary, fontWeight: "700" },
   errorText: {
-    color: '#ff5a5f',
-    textAlign: 'center',
+    color: "#ff5a5f",
+    textAlign: "center",
     marginTop: 10,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
