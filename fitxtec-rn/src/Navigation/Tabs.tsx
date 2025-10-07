@@ -77,9 +77,9 @@ export default function Tabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Routines" component={NotFoundScreen} />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Routines" component={RoutinesScreen} />
       <Tab.Screen name="Workout" component={WorkoutScreen} />
+      <Tab.Screen name="Progress" component={ProgressScreen} />
       <Tab.Screen name="Profile" component={UserScreen} />
     </Tab.Navigator>
   );

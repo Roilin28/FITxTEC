@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,46 +8,24 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import colors from "../theme/color";
 import styles from "../theme/routinesStyles";
+import { listRutinas, Rutina } from "../services/Routines";
 
 type RootStackParamList = {
   Home: undefined;
   User: undefined;
+  Workout: { routineId: string };
+  Routines: undefined;
+  RoutineDetails: { routineId: string };
 };
 
-const routines = [
-  {
-    id: "1",
-    name: "Cardio & Core",
-    duration: "60-90 min",
-    days: "1 day",
-    level: "Beginner",
-    levelColor: "#9EFF00",
-    desc: "Improve endurance and strengthen your core with light cardio sessions.",
-    icon: "fitness-outline",
-  },
-  {
-    id: "2",
-    name: "Full Body",
-    duration: "45-60 min",
-    days: "3 days",
-    level: "Intermediate",
-    levelColor: "#f0a500",
-    desc: "A balanced full-body workout combining strength and mobility.",
-    icon: "body-outline",
-  },
-  {
-    id: "3",
-    name: "Upper / Lower Split",
-    duration: "50-70 min",
-    days: "4 days",
-    level: "Advanced",
-    levelColor: "#f44336",
-    desc: "Push and pull movements with focused lower body days for growth.",
-    icon: "barbell-outline",
-  },
-];
-
 export default function RoutinesScreen() {
+  
+  const [routines, setRoutines] = useState<Array<{ id: string } & Rutina>>([]);
+
+  useEffect(() => {
+    listRutinas().then(setRoutines);
+  }, []);
+
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -109,30 +87,40 @@ export default function RoutinesScreen() {
               >
                 <View style={styles.routineHeader}>
                   <Ionicons
-                    name={routine.icon as any}
+                    name={"dumbbell" as any}
                     size={22}
                     color={colors.primary}
                   />
-                  <Text style={styles.routineName}>{routine.name}</Text>
-                  <Text style={styles.duration}>{routine.duration}</Text>
+                  <Text style={styles.routineName}>{routine.nombre}</Text>
+                  <Text style={styles.duration}>
+                    {routine.tiempoAproximado}
+                  </Text>
                 </View>
 
                 <View style={styles.tagsRow}>
-                  <Text style={styles.tagDays}>{routine.days}</Text>
+                  <Text style={styles.tagDays}>
+                    {routine.cantidadDias} days
+                  </Text>
                   <View
-                    style={[
-                      styles.tagLevel,
-                      { backgroundColor: routine.levelColor },
-                    ]}
+                    style={[styles.tagLevel, { backgroundColor: "#ffffff" }]}
                   >
-                    <Text style={styles.tagLevelText}>{routine.level}</Text>
+                    <Text style={styles.tagLevelText}>
+                      {routine.nivelDificultad}
+                    </Text>
                   </View>
                 </View>
 
-                <Text style={styles.desc}>{routine.desc}</Text>
+                <Text style={styles.desc}>{routine.descripcion}</Text>
 
                 <View style={styles.btnRow}>
-                  <TouchableOpacity style={styles.viewBtn}>
+                  <TouchableOpacity
+                    style={styles.viewBtn}
+                    onPress={() =>
+                      navigation.navigate("RoutineDetails", {
+                        routineId: routine.id,
+                      })
+                    }
+                  >
                     <Ionicons
                       name="eye-outline"
                       size={16}
@@ -141,7 +129,14 @@ export default function RoutinesScreen() {
                     <Text style={styles.viewBtnText}>View</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.startBtn}>
+                  <TouchableOpacity
+                    style={styles.startBtn}
+                    onPress={() =>
+                      navigation.navigate("Workout", {
+                        routineId: routine.id,
+                      })
+                    }
+                  >
                     <Text style={styles.startBtnText}>Start</Text>
                   </TouchableOpacity>
                 </View>

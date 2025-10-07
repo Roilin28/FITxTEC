@@ -31,6 +31,14 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // const onLogin = () => {
+  //   console.log({ email, password });
+  //   navigation.reset({
+  //     index: 0,
+  //     routes: [{ name: "Tabs" as keyof RootStackParamList }],
+  //   });
+  // }; 
+  
   const onLogin = async () => {
     if (loading) return;
     setError(null);
@@ -54,6 +62,7 @@ export default function LoginScreen() {
       setLoading(false);
     }
   };
+  
 
   const onGoogle = () => {
     // TODO: implementar Google (expo-auth-session o Firebase)
