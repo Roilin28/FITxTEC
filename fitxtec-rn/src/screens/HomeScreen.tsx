@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MotiView } from "moti";
 import styles from "../theme/homeStyles";
+import { local_Notification_Start_Workout } from "../services/notifications";
 
 type RootStackParamList = {
   Login: undefined;
@@ -143,9 +144,12 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.title}>Lower Day - Upper/Lower Workout</Text>
           <Text style={styles.subtitle}>4 exercises • 45 min estimated</Text>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.startButton}
-            onPress={() => navigation.navigate("Workout")}
+            onPress={() => navigation.navigate("Workout")} */}
+          <TouchableOpacity 
+          style={styles.startButton}
+          onPress={() => local_Notification_Start_Workout()}
           >
             <Text style={styles.startButtonText}>Start Workout</Text>
           </TouchableOpacity>

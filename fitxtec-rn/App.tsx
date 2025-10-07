@@ -12,6 +12,10 @@ import NotFoundScreen from "./src/screens/404Screen";
 import UserScreen from "./src/screens/UserScreen";
 import CalendarScreen from "./src/screens/CalendarScreen";
 
+import { AuthProvider } from "./src/services/AuthContext";
+import SignUp1 from "./src/screens/SignUp1";
+import SignUpTrainingScreen from "./src/screens/SignUpTraining";
+import SignUpSettingsScreen from "./src/screens/SignUpSettingsScreen";
 const Stack = createNativeStackNavigator();
 
 const navTheme = {
@@ -33,6 +37,9 @@ export default function App() {
           <Stack.Screen name="Routines" component={RoutinesScreen} />
           <Stack.Screen name="RoutineDetails" component={RoutinesScreen} />
           <Stack.Screen name="Calendar" component={CalendarScreen} />
+          <Stack.Screen name="SignUp1" component={SignUp1} />
+          <Stack.Screen name="SignUpTraining" component={SignUpTrainingScreen} />
+          <Stack.Screen name="SignUpSettings" component={SignUpSettingsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

@@ -20,6 +20,7 @@ type RootStackParamList = {
   User: undefined;
   Workout: { routineId: string };
 };
+import { local_Notification_Finish_Workout } from "../services/notifications";
 
 export default function WorkoutScreen() {
   const navigation =
@@ -114,11 +115,13 @@ export default function WorkoutScreen() {
             ))}
           </View>
         ))}
-
-        {/* Botón Finalizar */}
-        <TouchableOpacity style={styles.finishBtn}>
-          <Text style={styles.finishText}>Finalizar Entrenamiento</Text>
+        <SafeAreaView edges={["bottom"]} style={styles.footer}>
+        <TouchableOpacity style={styles.finishBtn}
+        onPress={() => local_Notification_Finish_Workout()}
+        >
+          <Text style={styles.finishText}>Finish Workout</Text>
         </TouchableOpacity>
+      </SafeAreaView>
       </ScrollView>
     </SafeAreaView>
   );
@@ -177,6 +180,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: '#fafafa',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   finishText: { color: colors.primaryText, fontSize: 16, fontWeight: "700" },
   errorText: { color: "#fff", textAlign: "center", marginTop: 50 },
