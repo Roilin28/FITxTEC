@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../theme/color";
 import ExerciseCard from "../../components/ExerciseCard";
+import { local_Notification_Finish_Workout } from "../services/notifications";
 
 export default function WorkoutScreen() {
   return (
@@ -27,9 +28,11 @@ export default function WorkoutScreen() {
       </ScrollView>
 
       <SafeAreaView edges={["bottom"]} style={styles.footer}>
-        <View style={styles.finishBtn}>
+        <TouchableOpacity style={styles.finishBtn}
+        onPress={() => local_Notification_Finish_Workout()}
+        >
           <Text style={styles.finishText}>Finish Workout</Text>
-        </View>
+        </TouchableOpacity>
       </SafeAreaView>
     </SafeAreaView>
   );

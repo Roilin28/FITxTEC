@@ -63,6 +63,7 @@ export default function LoginScreen() {
   const onSignup = () => {
     // TODO: navegar a SignUp
     console.log("Go to SignUp");
+    navigation.navigate("SignUp1" as never);
   };
 
   return (

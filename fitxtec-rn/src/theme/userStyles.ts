@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import colors from "./color";
 
 export const userStyles = StyleSheet.create({
     safe: {
@@ -150,9 +151,22 @@ export const userStyles = StyleSheet.create({
         gap: 8,
         justifyContent: "center",
     },
-    logoutText: {
-        color: "#fff",
-        fontWeight: "700",
-        fontSize: 15,
-    },
+logoutText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+},
+primaryBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+},
+primaryBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+},
 });
