@@ -115,7 +115,7 @@ export default function WorkoutScreen() {
             ))}
           </View>
         ))}
-        <SafeAreaView edges={["bottom"]} style={styles.footer}>
+        <SafeAreaView edges={["bottom"]} style={styles.finishBtn}>
         <TouchableOpacity style={styles.finishBtn}
         onPress={() => local_Notification_Finish_Workout()}
         >
@@ -180,14 +180,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-  },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fafafa',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   finishText: { color: colors.primaryText, fontSize: 16, fontWeight: "700" },
   errorText: { color: "#fff", textAlign: "center", marginTop: 50 },
