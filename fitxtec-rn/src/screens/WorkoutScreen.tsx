@@ -20,6 +20,7 @@ type RootStackParamList = {
   User: undefined;
   Workout: { routineId: string };
 };
+import { local_Notification_Finish_Workout } from "../services/notifications";
 
 export default function WorkoutScreen() {
   const navigation =
@@ -34,7 +35,7 @@ export default function WorkoutScreen() {
     const fetchRutina = async () => {
       setLoading(true);
       try {
-        const data = await getRutinaDeep("zEC0iAbFCe3lEynKmTTg");
+        const data = await getRutinaDeep(routineId);
         setRutina(data);
       } catch (e) {
         console.error("Error al obtener rutina:", e);
@@ -114,11 +115,13 @@ export default function WorkoutScreen() {
             ))}
           </View>
         ))}
-
-        {/* Botón Finalizar */}
-        <TouchableOpacity style={styles.finishBtn}>
-          <Text style={styles.finishText}>Finalizar Entrenamiento</Text>
+        <SafeAreaView edges={["bottom"]} style={styles.finishBtn}>
+        <TouchableOpacity style={styles.finishBtn}
+        onPress={() => local_Notification_Finish_Workout()}
+        >
+          <Text style={styles.finishText}>Finish Workout</Text>
         </TouchableOpacity>
+      </SafeAreaView>
       </ScrollView>
     </SafeAreaView>
   );

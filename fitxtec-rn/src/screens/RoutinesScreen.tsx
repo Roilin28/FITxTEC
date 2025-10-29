@@ -19,7 +19,8 @@ type RootStackParamList = {
 };
 
 export default function RoutinesScreen() {
-  const [routines, setRoutines] = useState<Rutina[]>([]);
+  
+  const [routines, setRoutines] = useState<Array<{ id: string } & Rutina>>([]);
 
   useEffect(() => {
     listRutinas().then(setRoutines);
@@ -78,7 +79,7 @@ export default function RoutinesScreen() {
           >
             {routines.map((routine, i) => (
               <MotiView
-                key={routine.rutinaId}
+                key={routine.id}
                 from={{ opacity: 0, translateY: 10 }}
                 animate={{ opacity: 1, translateY: 0 }}
                 transition={{ delay: i * 100 }}
@@ -116,7 +117,7 @@ export default function RoutinesScreen() {
                     style={styles.viewBtn}
                     onPress={() =>
                       navigation.navigate("RoutineDetails", {
-                        routineId: routine.rutinaId,
+                        routineId: routine.id,
                       })
                     }
                   >
@@ -132,7 +133,7 @@ export default function RoutinesScreen() {
                     style={styles.startBtn}
                     onPress={() =>
                       navigation.navigate("Workout", {
-                        routineId: routine.rutinaId,
+                        routineId: routine.id,
                       })
                     }
                   >
