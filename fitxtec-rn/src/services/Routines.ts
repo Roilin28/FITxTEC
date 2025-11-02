@@ -10,7 +10,8 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
+
 
 /* ================== Interfaces ================== */
 
@@ -196,4 +197,78 @@ export async function getRutinaDeep(rutinaId: string) {
   );
 
   return { ...r, dias };
+}
+
+
+///* ================== PARTE DE IA ================== */
+
+// ===== IA types (lo que esperamos del modelo) =====
+export type AiRoutineJSON = {
+  rutina: {
+    nombre: string;
+    cantidadDias: number;
+    tiempoAproximado: string;
+    nivelDificultad: "Beginner" | "Intermediate" | "Advanced";
+    descripcion: string;
+    notas?: string | null;
+  };
+  dias: Array<{
+    id: number;                 // 1, 2, ...
+    nombre: string;
+    ejercicios: Array<{ id: string; nombre: string; series: number }>;
+  }>;
+};
+
+// Validación mínima sin librerías
+function isValidAiRoutine(x: any): x is AiRoutineJSON {
+  try {
+    if (!x?.rutina || !Array.isArray(x?.dias)) return false;
+    const r = x.rutina;
+    if (
+      typeof r.nombre !== "string" ||
+      typeof r.cantidadDias !== "number" ||
+      typeof r.tiempoAproximado !== "string" ||
+      !["Beginner","Intermediate","Advanced"].includes(r.nivelDificultad) ||
+      typeof r.descripcion !== "string"
+    ) return false;
+    for (const d of x.dias) {
+      if (typeof d.id !== "number" || typeof d.nombre !== "string" || !Array.isArray(d.ejercicios)) return false;
+      for (const e of d.ejercicios) {
+        if (typeof e.id !== "string" || typeof e.nombre !== "string" || typeof e.series !== "number") return false;
+      }
+    }
+    return true;
+  } catch { return false; }
+}
+
+export { isValidAiRoutine };
+
+
+
+
+export async function saveRoutineFromAI(ai: AiRoutineJSON): Promise<string> {
+  if (!isValidAiRoutine(ai)) throw new Error("AI JSON inválido");
+
+  const uid = auth.currentUser?.uid ?? "anon"; 
+
+  const ref = await addDoc(rutinasCol(), {
+    ...ai.rutina,
+    userId: uid,
+    createdAt: now(),
+    updatedAt: now(),
+    serverUpdatedAt: serverTimestamp(),
+  });
+
+  const batch = writeBatch(db);
+  for (const d of ai.dias) {
+    const diaRef = doc(db, `rutinas/${ref.id}/dias/${String(d.id)}`);
+    batch.set(diaRef, { nombre: d.nombre });
+
+    for (const e of d.ejercicios) {
+      const ejRef = doc(db, `rutinas/${ref.id}/dias/${String(d.id)}/ejercicios/${e.id}`);
+      batch.set(ejRef, { nombre: e.nombre, series: e.series });
+    }
+  }
+  await batch.commit();
+  return ref.id;
 }

@@ -9,6 +9,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import colors from "../theme/color";
 import styles from "../theme/routinesStyles";
 import { listRutinas, Rutina } from "../services/Routines";
+import AiRoutineGenerator from "./AiRoutineGenerator";
 
 type RootStackParamList = {
   Home: undefined;
@@ -21,6 +22,8 @@ type RootStackParamList = {
 export default function RoutinesScreen() {
   
   const [routines, setRoutines] = useState<Array<{ id: string } & Rutina>>([]);
+ 
+  const [aiMode, setAiMode] = useState(false);
 
   useEffect(() => {
     listRutinas().then(setRoutines);
@@ -28,6 +31,22 @@ export default function RoutinesScreen() {
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+    if (aiMode) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <AiRoutineGenerator
+          onClose={() => setAiMode(false)}
+          onSaved={(newId) => {
+            setAiMode(false);
+            // refresca lista o navega directo al detalle / workout
+            listRutinas().then(setRoutines);
+            // navigation.navigate("RoutineDetails", { routineId: newId });
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -175,9 +194,9 @@ export default function RoutinesScreen() {
             <Text style={styles.aiBullet}>• Focused on your unique goals</Text>
           </View>
 
-          <TouchableOpacity style={styles.aiButton}>
-            <Text style={styles.aiButtonText}>Generate with AI</Text>
-          </TouchableOpacity>
+          <TouchableOpacity style={styles.aiButton} onPress={() => setAiMode(true)}>
+        <Text style={styles.aiButtonText}>Generate with AI</Text>
+      </TouchableOpacity>
         </MotiView>
       </ScrollView>
     </SafeAreaView>
