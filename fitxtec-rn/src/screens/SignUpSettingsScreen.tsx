@@ -36,7 +36,14 @@ export default function SignUpSettingsScreen() {
       await signUpSettings(weightUnit, distanceUnit, usuario);
 
       // 🔹 Enviamos correo de bienvenida
-
+      await fetch("https://hooks.zapier.com/hooks/catch/25224730/usotvwu/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+          name: usuario.nombre,
+          email: usuario.email,
+          }),
+    });
 
       // 🔹 Navegamos al login
       navigation.navigate("Login");
