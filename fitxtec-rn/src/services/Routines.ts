@@ -9,8 +9,11 @@ import {
   serverTimestamp,
   updateDoc,
   deleteDoc,
+  query,
+  where
 } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { db } from "./firebase";
+import { auth } from "./firebase";
 
 
 /* ================== Interfaces ================== */
@@ -43,6 +46,10 @@ export interface RutinaCompleta extends Rutina {
 }
 
 /* ================== Helpers ================== */
+const savedRoutinesCol = () => collection(db, "savedRoutines");
+const savedDiasCol = (routineId: string) => collection(db, `savedRoutines/${routineId}/dias`);
+const savedEjerciciosCol = (routineId: string, diaId: string) =>
+  collection(db, `savedRoutines/${routineId}/dias/${diaId}/ejercicios`);
 
 const rutinasCol = () => collection(db, "rutinas");
 const diasCol = (rutinaId: string) => collection(db, `rutinas/${rutinaId}/dias`);
@@ -246,12 +253,50 @@ export { isValidAiRoutine };
 
 
 
-export async function saveRoutineFromAI(ai: AiRoutineJSON): Promise<string> {
+// export async function saveRoutineFromAI(ai: AiRoutineJSON, userId?: string): Promise<string> {
+//   if (!isValidAiRoutine(ai)) throw new Error("AI JSON inválido");
+
+//   const uid = auth.currentUser?.uid ?? "anon"; 
+
+//   const ref = await addDoc(rutinasCol(), {
+//     ...ai.rutina,
+//     ...(uid ? { userId: uid } : {}),
+//     createdAt: now(),
+//     updatedAt: now(),
+//     serverUpdatedAt: serverTimestamp(),
+//   });
+
+//   const batch = writeBatch(db);
+//   for (const d of ai.dias) {
+//     const diaRef = doc(db, `savedRoutines/${ref.id}/dias/${String(d.id)}`);
+//     batch.set(diaRef, { nombre: d.nombre });
+
+//     for (const e of d.ejercicios) {
+//       const ejRef = doc(db, `savedRoutines/${ref.id}/dias/${String(d.id)}/ejercicios/${e.id}`);
+//       batch.set(ejRef, { nombre: e.nombre, series: e.series });
+//     }
+//   }
+
+//   if (uid) {
+//     const userRutinaRef = doc(db, `usuarios/${uid}/savedRoutines/${ref.id}`);
+//     batch.set(userRutinaRef, {
+//       rutinaId: ref.id,
+//       nombre: ai.rutina.nombre,
+//       nivelDificultad: ai.rutina.nivelDificultad,
+//       createdAt: now(),
+//     });
+//   }
+
+//   await batch.commit();
+//   return ref.id;
+// }
+export async function saveRoutineFromAI(ai: AiRoutineJSON, userId?: string): Promise<string> {
   if (!isValidAiRoutine(ai)) throw new Error("AI JSON inválido");
 
-  const uid = auth.currentUser?.uid ?? "anon"; 
+  const uid = userId ?? auth.currentUser?.uid ?? "anon";
 
-  const ref = await addDoc(rutinasCol(), {
+  // 1) Guarda doc principal en savedRoutines
+  const ref = await addDoc(savedRoutinesCol(), {
     ...ai.rutina,
     userId: uid,
     createdAt: now(),
@@ -259,16 +304,35 @@ export async function saveRoutineFromAI(ai: AiRoutineJSON): Promise<string> {
     serverUpdatedAt: serverTimestamp(),
   });
 
+  // 2) Subcolecciones en savedRoutines/{id}/dias/.../ejercicios
   const batch = writeBatch(db);
   for (const d of ai.dias) {
-    const diaRef = doc(db, `rutinas/${ref.id}/dias/${String(d.id)}`);
+    const diaRef = doc(db, `savedRoutines/${ref.id}/dias/${String(d.id)}`);
     batch.set(diaRef, { nombre: d.nombre });
 
     for (const e of d.ejercicios) {
-      const ejRef = doc(db, `rutinas/${ref.id}/dias/${String(d.id)}/ejercicios/${e.id}`);
+      const ejRef = doc(db, `savedRoutines/${ref.id}/dias/${String(d.id)}/ejercicios/${e.id}`);
       batch.set(ejRef, { nombre: e.nombre, series: e.series });
     }
   }
+
+  // (Opcional) puntero bajo el usuario
+  if (uid && uid !== "anon") {
+    const userPtr = doc(db, `usuarios/${uid}/savedRoutines/${ref.id}`);
+    batch.set(userPtr, {
+      rutinaId: ref.id,
+      nombre: ai.rutina.nombre,
+      nivelDificultad: ai.rutina.nivelDificultad,
+      createdAt: now(),
+    });
+  }
+
   await batch.commit();
   return ref.id;
+}
+
+export async function listRutinasForUser(userId: string) {
+  const q = query(rutinasCol(), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as Rutina) }));
 }

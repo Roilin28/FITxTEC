@@ -13,6 +13,7 @@ import colors from "../theme/color";
 import { saveRoutineFromAI, AiRoutineJSON } from "../services/Routines";
 import { generateOfflineRoutineFromCatalog } from "../services/offlineGenerator";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "../services/AuthContext";
 
 function isRoutineIntent(prompt: string) {
   const t = prompt.toLowerCase();
@@ -152,6 +153,7 @@ export default function AiRoutineGenerator({
   const [messages, setMessages] = useState<Array<{ who: "user" | "ai"; text: string }>>([]);
   const [preview, setPreview] = useState<AiRoutineJSON | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const { user } = useAuth();
 
   const scrollToEnd = () => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 10);
 
@@ -209,7 +211,9 @@ export default function AiRoutineGenerator({
     if (!preview || loading) return;
     setLoading(true);
     try {
-      const id = await saveRoutineFromAI(preview);
+      //quitar despues 
+      console.log("Guardando rutina con userId:", user?.id);
+      const id = await saveRoutineFromAI(preview, user?.id);
       setMessages((m) => [...m, { who: "ai", text: "¡Rutina guardada!" }]);
       onSaved(id);
     } catch (e) {
