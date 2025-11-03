@@ -1,5 +1,6 @@
 // App.tsx
 import React from "react";
+import * as WebBrowser from "expo-web-browser";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
@@ -17,6 +18,9 @@ import SignUp1 from "./src/screens/SignUp1";
 import SignUpTrainingScreen from "./src/screens/SignUpTraining";
 import SignUpSettingsScreen from "./src/screens/SignUpSettingsScreen";
 const Stack = createNativeStackNavigator();
+
+// Completa sesiones de auth incluso en arranques en frío (debe estar en ámbito de módulo)
+WebBrowser.maybeCompleteAuthSession();
 
 const navTheme = {
   ...DefaultTheme,

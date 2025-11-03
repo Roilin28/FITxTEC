@@ -1,11 +1,5 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import colors from "../theme/color";
@@ -13,11 +7,21 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { loginWithEmailPassword } from "../services/login";
 import { useAuth } from "../services/AuthContext";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
+import Constants from "expo-constants";
+import { collection, getDocs, query, where, addDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
+
 
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Tabs: undefined;
+  SignUp1: undefined;
+  SignUpTraining: { usuario: any };
+  SignUpSettings: { usuario: any };
 };
 
 export default function LoginScreen() {
@@ -31,13 +35,98 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // const onLogin = () => {
-  //   console.log({ email, password });
-  //   navigation.reset({
-  //     index: 0,
-  //     routes: [{ name: "Tabs" as keyof RootStackParamList }],
-  //   });
-  // }; 
+  const googleExtra = (Constants.expoConfig?.extra as any)?.google ?? {};
+  const demoAuth = (Constants.expoConfig?.extra as any)?.demoAuth === true;
+  const isExpoGo = Constants.appOwnership === "expo";
+  const hasAndroidClientId = typeof googleExtra.androidClientId === 'string' && !googleExtra.androidClientId?.startsWith('REPLACE_ME_');
+  const proxyRedirectUri = isExpoGo ? makeRedirectUri({ useProxy: true } as any) : undefined;
+  const expectedAuthProxy = `https://auth.expo.io/@${(Constants as any)?.expoConfig?.owner ?? (Constants as any)?.expoConfig?.username ?? 'unknown'}/${(Constants as any)?.expoConfig?.slug ?? 'app'}`;
+  let usernameHint: string | undefined;
+  try {
+    const host = proxyRedirectUri?.split('://')[1]?.split('/')[0] || '';
+    const firstLabel = host.split('.')[0] || '';
+    const parts = firstLabel.split('-');
+    if (parts.length >= 3) usernameHint = parts[1];
+  } catch {}
+  const expectedAuthProxyHint = usernameHint
+    ? `https://auth.expo.io/@${usernameHint}/${(Constants as any)?.expoConfig?.slug ?? 'app'}`
+    : undefined;
+  const safeTail = (s?: string) => (typeof s === 'string' && s.length > 8 ? s.slice(-8) : s ? s : 'none');
+  const computedProxyRedirect = (isExpoGo && proxyRedirectUri)
+    ? `${expectedAuthProxy}?returnUrl=${encodeURIComponent(proxyRedirectUri)}`
+    : undefined;
+  const googleConfig: any = (Platform.OS === 'android' && (isExpoGo || !hasAndroidClientId))
+    ? {
+        expoClientId: googleExtra.expoClientId,
+        androidClientId: googleExtra.expoClientId,
+        webClientId: googleExtra.webClientId,
+        redirectUri: expectedAuthProxy,
+        scopes: ["openid", "profile", "email"],
+      }
+    : {
+        expoClientId: googleExtra.expoClientId,
+        androidClientId: googleExtra.androidClientId,
+        iosClientId: googleExtra.iosClientId,
+        webClientId: googleExtra.webClientId,
+        scopes: ["openid", "profile", "email"],
+      };
+
+  const [request, response, promptAsync] = Google.useAuthRequest(googleConfig);
+
+
+  const completeLoginWithEmail = async (email: string, name?: string) => {
+    const q = query(collection(db, "usuarios"), where("email", "==", email));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      const doc = snap.docs[0];
+      const u = { id: doc.id, ...(doc.data() as any) };
+      setUser(u);
+      navigation.reset({ index: 0, routes: [{ name: "Tabs" as never }] });
+      return;
+    }
+
+    const randomPwd = Math.random().toString(36).slice(2, 10);
+    const minimalUser = {
+      email,
+      contrasenna: randomPwd,
+      nombre: name ?? "",
+      createdAt: new Date(),
+    };
+    const docRef = await addDoc(collection(db, "usuarios"), minimalUser);
+
+    navigation.navigate("SignUpTraining", { usuario: { id: docRef.id, ...minimalUser } } as any);
+  };
+
+  const handleGoogleSuccess = async (accessToken: string) => {
+    try {
+      const profileRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const profile = await profileRes.json();
+     
+      const emailFromGoogle: string | undefined = profile?.email;
+      if (!emailFromGoogle) {
+        setError("No se pudo obtener el email de Google");
+        return;
+      }
+      await completeLoginWithEmail(emailFromGoogle, profile?.name ?? undefined);
+    } catch (e) {
+      console.error(e);
+      setError("Error al iniciar con Google");
+    }
+  };
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const accessToken = response.authentication?.accessToken as string | undefined;
+      if (accessToken) {
+        handleGoogleSuccess(accessToken);
+      }
+    } else if (response?.type) {
+    }
+  }, [response]);
+
   
   const onLogin = async () => {
     if (loading) return;
@@ -48,7 +137,6 @@ export default function LoginScreen() {
       if (!user) {
         setError("Credenciales inválidas");
       } else {
-        console.log("Login: ", user, user.id);
         setUser(user);
         navigation.reset({
           index: 0,
@@ -64,14 +152,28 @@ export default function LoginScreen() {
   };
   
 
-  const onGoogle = () => {
-    // TODO: implementar Google (expo-auth-session o Firebase)
-    console.log("Google sign-in");
+  const onGoogle = async () => {
+    try {
+      if (demoAuth) {
+        // Modo DEMO: sin OAuth real. Usa un email fijo para simular “Continuar con Google”.
+        const demoEmail = "isasctopz@gmail.com";
+        const demoName = "Isaac Rojas";
+        await completeLoginWithEmail(demoEmail, demoName);
+        return;
+      }
+      const useProxy = isExpoGo || (Platform.OS === 'android' && !hasAndroidClientId);
+      const res = await promptAsync({ useProxy });
+      if (res?.type === "success") {
+        const token = res.authentication?.accessToken;
+        if (token) await handleGoogleSuccess(token);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Error al iniciar con Google");
+    }
   };
 
   const onSignup = () => {
-    // TODO: navegar a SignUp
-    console.log("Go to SignUp");
     navigation.navigate("SignUp1" as never);
   };
 
@@ -147,7 +249,7 @@ export default function LoginScreen() {
               color={colors.text}
               style={{ marginRight: 8 }}
             />
-            <Text style={styles.googleText}>Continue with Google</Text>
+            <Text style={styles.googleText}>{demoAuth ? "Continue with Google" : "Continue with Google"}</Text>
           </TouchableOpacity>
 
           <View style={styles.footerRow}>

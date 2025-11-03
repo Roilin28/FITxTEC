@@ -8,7 +8,6 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import colors from "../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -27,8 +26,7 @@ export default function SignUp1() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [name, setName] = useState("");
-  const [dob, setDob] = useState<Date | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
+  // DOB se moved to SignUpTraining
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -38,10 +36,6 @@ export default function SignUp1() {
       return;
     }
 
-    if (!dob) {
-      alert("Please select your date of birth.");
-      return;
-    }
     if (!email ) {
       alert("Please enter a valid email.");
       return;
@@ -51,13 +45,13 @@ export default function SignUp1() {
       return;
     }
     try {
-      const usuario = await signUpWithEmailPassword(email, password, name, dob);
+  const usuario = await signUpWithEmailPassword(email, password, name);
       if (!usuario) {
         alert("Sign up failed. Please try again.");
         return;
       }
-      navigation.navigate("SignUpTraining", { usuario });;
-      console.log({ name, dob, email, password });
+  navigation.navigate("SignUpTraining", { usuario });
+  console.log({ name, email, password });
     } catch (error) {
       alert("An error occurred during sign up.");
       console.error(error);
@@ -81,27 +75,7 @@ export default function SignUp1() {
             />
           </View>
 
-          {/* Date Picker */}
-          <TouchableOpacity
-            style={[styles.inputWrapper, { marginTop: 12 }]}
-            onPress={() => setShowPicker(true)}
-          >
-            <Text style={[styles.input, { color: dob ? colors.text : colors.textMuted }]}>
-              {dob ? dob.toLocaleDateString() : "Date of Birth"}
-            </Text>
-          </TouchableOpacity>
-
-          {showPicker && (
-            <DateTimePicker
-              mode="date"
-              value={dob || new Date(2000, 0, 1)}
-              display="spinner"
-              onChange={(_, date) => {
-                setShowPicker(false);
-                if (date) setDob(date);
-              }}
-            />
-          )}
+          {/* Date of Birth moved to SignUpTraining */}
 
           {/* Email */}
           <View style={[styles.inputWrapper, { marginTop: 12 }]}>

@@ -19,8 +19,9 @@ export default function SignUpSettingsScreen() {
     const route = useRoute();
   const { usuario } = route.params as { usuario: any };
   console.log("Received usuario:", usuario);
-  const [weightUnit, setWeightUnit] = useState("");
-  const [distanceUnit, setDistanceUnit] = useState("");
+  // Valores predeterminados
+  const [weightUnit, setWeightUnit] = useState("kg");
+  const [distanceUnit, setDistanceUnit] = useState("km");
 
   const onFinish = () => {
     // Guardar datos o enviar al backend si es necesario
@@ -37,7 +38,7 @@ export default function SignUpSettingsScreen() {
 
         <View style={styles.card}>
           <Text style={styles.label}>Weight Unit</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
+          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E", marginTop: 14, marginBottom: 18 }]}>
             <Picker
               selectedValue={weightUnit}
               onValueChange={setWeightUnit}
@@ -51,7 +52,7 @@ export default function SignUpSettingsScreen() {
           </View>
 
           <Text style={styles.label}>Distance Unit</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
+          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E", marginTop: 14, marginBottom: 18 }]}>
             <Picker
                 selectedValue={distanceUnit}
                 onValueChange={setDistanceUnit}

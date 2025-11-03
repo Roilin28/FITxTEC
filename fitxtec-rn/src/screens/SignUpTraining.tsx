@@ -1,16 +1,13 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import colors from "../theme/color";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signUpTraining } from "../services/SignUp";
+import WebDateInput from "../../components/WebDateInput";
 
 type RootStackParamList = {
   SignUpTraining: { usuario: any };
@@ -23,9 +20,12 @@ export default function SignUpTrainingScreen() {
   console.log("Received usuario:", usuario);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [goal, setGoal] = useState("");
-  const [experience, setExperience] = useState("");
-  const [workouts, setWorkouts] = useState("");
+  // Valores predeterminados para agilizar el flujo
+  const [goal, setGoal] = useState("Hypertrophy");
+  const [experience, setExperience] = useState("Beginner");
+  const [workouts, setWorkouts] = useState("3 days");
+  const [dob, setDob] = useState<Date | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   const onNext = async () => {
     if (!goal || !experience || !workouts) {
@@ -33,7 +33,12 @@ export default function SignUpTrainingScreen() {
       return;
     }
 
-    const updatedUsuario = await signUpTraining(goal, experience, workouts, usuario);
+    if (!dob) {
+      alert("Please select your date of birth.");
+      return;
+    }
+
+    const updatedUsuario = await signUpTraining(goal, experience, workouts, usuario, dob);
     if (!updatedUsuario) {
       alert("Error updating user information.");
       return;
@@ -50,8 +55,38 @@ export default function SignUpTrainingScreen() {
         <Text style={styles.subtitle}>Training Preferences</Text>
 
         <View style={styles.card}>
+          <Text style={styles.label}>Date of Birth</Text>
+          {Platform.OS === 'web' ? (
+            <View style={[styles.inputWrapper, styles.pickerGap, { backgroundColor: "#1E1E1E", paddingHorizontal: 6, justifyContent: 'center' }]}>
+              <WebDateInput value={dob} onChange={setDob} />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[styles.inputWrapper, styles.pickerGap, { backgroundColor: "#1E1E1E" }]}
+                onPress={() => setShowPicker(true)}
+              >
+                <Text style={{ color: dob ? colors.text : colors.textMuted, paddingHorizontal: 14, fontSize: 15 }}>
+                  {dob ? dob.toLocaleDateString() : "Select date of birth"}
+                </Text>
+              </TouchableOpacity>
+
+              {showPicker && (
+                <DateTimePicker
+                  mode="date"
+                  value={dob || new Date(2000, 0, 1)}
+                  display="spinner"
+                  onChange={(_: any, date?: Date) => {
+                    setShowPicker(false);
+                    if (date) setDob(date);
+                  }}
+                />
+              )}
+            </>
+          )}
+
           <Text style={styles.label}>Primary Goal</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
+          <View style={[styles.inputWrapper, styles.pickerGap, { backgroundColor: "#1E1E1E" }]}>
             <Picker
               selectedValue={goal}
               onValueChange={setGoal}
@@ -68,7 +103,7 @@ export default function SignUpTrainingScreen() {
           </View>
 
           <Text style={styles.label}>Experience Level</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
+          <View style={[styles.inputWrapper, styles.pickerGap, { backgroundColor: "#1E1E1E" }]}>
             <Picker
               selectedValue={experience}
               onValueChange={setExperience}
@@ -83,7 +118,7 @@ export default function SignUpTrainingScreen() {
           </View>
 
           <Text style={styles.label}>Workouts per Week</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
+          <View style={[styles.inputWrapper, styles.pickerGap, { backgroundColor: "#1E1E1E" }]}>
             <Picker
               selectedValue={workouts}
               onValueChange={setWorkouts}
@@ -151,6 +186,10 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     height: 44,
     justifyContent: "center",
+  },
+  pickerGap: {
+    marginTop: 14,
+    marginBottom: 18,
   },
   input: {
     color: colors.text,
