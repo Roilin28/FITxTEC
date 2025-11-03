@@ -49,7 +49,7 @@ export default function LoginScreen() {
         setError("Credenciales inválidas");
       } else {
         console.log("Login: ", user, user.id);
-        setUser(user);
+        await setUser(user);
         navigation.reset({
           index: 0,
           routes: [{ name: "Tabs" as keyof RootStackParamList }],

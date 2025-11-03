@@ -38,7 +38,8 @@ export default function UserScreen() {
   const [unidadPeso, setUnidadPeso] = useState("");
   const [unidadDistancia, setUnidadDistancia] = useState("");
 
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, signOut, updateUserFields } = useAuth();
 
   useEffect(() => {
@@ -48,14 +49,16 @@ export default function UserScreen() {
       setAge(user.edad ? String(user.edad) : "");
       setObjetivo(user.objetivo || "");
       setExperiencia(user.experiencia || "");
-      setWorkoutsPorSemana(user.workoutsPorSemana ? String(user.workoutsPorSemana) : "");
+      setWorkoutsPorSemana(
+        user.workoutsPorSemana ? String(user.workoutsPorSemana) : ""
+      );
       if (user.unidadPeso) setUnidadPeso(user.unidadPeso);
       if (user.unidadDistancia) setUnidadDistancia(user.unidadDistancia);
     }
   }, [user]);
 
-  const onSignout = () => {
-    signOut();
+  const onSignout = async () => {
+    await signOut();
     navigation.navigate("Login" as keyof RootStackParamList);
   };
 
@@ -138,11 +141,11 @@ export default function UserScreen() {
                 }}
                 style={styles.input}
               >
-              <Picker.Item label="Hypertrophy" value="Hypertrophy" />
-              <Picker.Item label="Strength" value="Strength" />
-              <Picker.Item label="Endurance" value="Endurance" />
-              <Picker.Item label="Weight Loss" value="Weight Loss" />
-              <Picker.Item label="General Fitness" value="General Fitness" />
+                <Picker.Item label="Hypertrophy" value="Hypertrophy" />
+                <Picker.Item label="Strength" value="Strength" />
+                <Picker.Item label="Endurance" value="Endurance" />
+                <Picker.Item label="Weight Loss" value="Weight Loss" />
+                <Picker.Item label="General Fitness" value="General Fitness" />
               </Picker>
             </View>
             <Text style={styles.label}>Experience Level</Text>
@@ -155,9 +158,9 @@ export default function UserScreen() {
                 }}
                 style={styles.input}
               >
-              <Picker.Item label="Beginner" value="Beginner" />
-              <Picker.Item label="Intermediate" value="Intermediate" />
-              <Picker.Item label="Advanced" value="Advanced" />
+                <Picker.Item label="Beginner" value="Beginner" />
+                <Picker.Item label="Intermediate" value="Intermediate" />
+                <Picker.Item label="Advanced" value="Advanced" />
               </Picker>
             </View>
             <Text style={styles.label}>Workouts per Week</Text>
@@ -174,7 +177,7 @@ export default function UserScreen() {
               <Picker.Item label="3 days" value="3 days" />
               <Picker.Item label="4 days" value="4 days" />
               <Picker.Item label="5 days" value="5 days" />
-              </Picker>
+            </Picker>
           </View>
         </View>
 
@@ -201,7 +204,7 @@ export default function UserScreen() {
             >
               <Picker.Item label="Kilograms (kg)" value="kg" />
               <Picker.Item label="Pounds (lbs)" value="lbs" />
-              </Picker>
+            </Picker>
             <Text style={styles.label}>Distance Unit</Text>
             <Picker
               selectedValue={unidadDistancia}
@@ -213,7 +216,7 @@ export default function UserScreen() {
             >
               <Picker.Item label="Kilometers (km)" value="km" />
               <Picker.Item label="Miles (mi)" value="mi" />
-              </Picker>
+            </Picker>
           </View>
         </View>
 
@@ -262,9 +265,7 @@ export default function UserScreen() {
             <Text style={styles.actionText}>Data Export</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            onPress={onSignout}
-            style={styles.logoutBtn}>
+          <TouchableOpacity onPress={onSignout} style={styles.logoutBtn}>
             <Ionicons name="log-out-outline" size={18} color="white" />
             <Text style={styles.logoutText}>Sign Out</Text>
           </TouchableOpacity>

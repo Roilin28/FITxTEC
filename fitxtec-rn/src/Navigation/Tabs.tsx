@@ -1,17 +1,51 @@
 // src/navigation/Tabs.tsx
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import colors from "../theme/color";
 
 import HomeScreen from "../screens/HomeScreen";
-import WorkoutScreen from "../screens/WorkoutScreen";
-import NotFoundScreen from "../screens/404Screen";
+import WorkoutMenuScreen from "../screens/WorkoutMenuScreen";
 import ProgressScreen from "../screens/ProgressScreen";
 import RoutinesScreen from "../screens/RoutinesScreen";
 import UserScreen from "../screens/UserScreen";
+import WorkoutScreen from "../screens/WorkoutScreen";
+import RoutineDetailsScreen from "../screens/RoutineDetailsScreen";
+import CalendarScreen from "../screens/CalendarScreen";
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+// Stack Navigator for Home tab
+function HomeStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HomeMain" component={HomeScreen} />
+      <Stack.Screen name="Calendar" component={CalendarScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack Navigator for Routines tab
+function RoutinesStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="RoutinesMain" component={RoutinesScreen} />
+      <Stack.Screen name="RoutineDetails" component={RoutineDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack Navigator for Workout tab
+function WorkoutStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="WorkoutMain" component={WorkoutMenuScreen} />
+      <Stack.Screen name="WorkoutDetail" component={WorkoutScreen} />
+    </Stack.Navigator>
+  );
+}
 
 export default function Tabs() {
   return (
@@ -30,7 +64,7 @@ export default function Tabs() {
         },
         tabBarIcon: ({ color, size, focused }) => {
           switch (route.name) {
-            case "Home":
+            case "HomeTab":
               return (
                 <Ionicons
                   name={focused ? "home" : "home-outline"}
@@ -38,7 +72,7 @@ export default function Tabs() {
                   color={color}
                 />
               );
-            case "Workout":
+            case "WorkoutTab":
               return (
                 <MaterialCommunityIcons
                   name="dumbbell"
@@ -46,7 +80,7 @@ export default function Tabs() {
                   color={color}
                 />
               );
-            case "Routines":
+            case "RoutinesTab":
               return (
                 <Ionicons
                   name={focused ? "grid" : "grid-outline"}
@@ -54,7 +88,7 @@ export default function Tabs() {
                   color={color}
                 />
               );
-            case "Progress":
+            case "ProgressTab":
               return (
                 <Ionicons
                   name={focused ? "stats-chart" : "stats-chart-outline"}
@@ -62,7 +96,7 @@ export default function Tabs() {
                   color={color}
                 />
               );
-            case "Profile":
+            case "ProfileTab":
               return (
                 <Ionicons
                   name={focused ? "person" : "person-outline"}
@@ -76,11 +110,11 @@ export default function Tabs() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Routines" component={RoutinesScreen} />
-      <Tab.Screen name="Workout" component={WorkoutScreen} />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
-      <Tab.Screen name="Profile" component={UserScreen} />
+      <Tab.Screen name="HomeTab" component={HomeStack} />
+      <Tab.Screen name="RoutinesTab" component={RoutinesStack} />
+      <Tab.Screen name="WorkoutTab" component={WorkoutStack} />
+      <Tab.Screen name="ProgressTab" component={ProgressScreen} />
+      <Tab.Screen name="ProfileTab" component={UserScreen} />
     </Tab.Navigator>
   );
 }

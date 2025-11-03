@@ -6,21 +6,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { MotiView } from "moti";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import colors from "../theme/color";
 import styles from "../theme/routinesStyles";
 import { listRutinas, Rutina } from "../services/Routines";
 
 type RootStackParamList = {
-  Home: undefined;
-  User: undefined;
-  Workout: { routineId: string };
-  Routines: undefined;
+  RoutinesMain: undefined;
   RoutineDetails: { routineId: string };
 };
 
+type TabParamList = {
+  HomeTab: undefined;
+  RoutinesTab: undefined;
+  WorkoutTab: undefined;
+  ProgressTab: undefined;
+  ProfileTab: undefined;
+};
+
 export default function RoutinesScreen() {
-  
-  const [routines, setRoutines] = useState<Array<{ id: string } & Rutina>>([]);
+  const [routines, setRoutines] = useState<({ id: string } & Rutina)[]>([]);
 
   useEffect(() => {
     listRutinas().then(setRoutines);
@@ -28,6 +33,7 @@ export default function RoutinesScreen() {
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tabNavigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -41,7 +47,7 @@ export default function RoutinesScreen() {
         <Text style={styles.brand}>FITxTEC</Text>
         <TouchableOpacity
           style={styles.profileBtn}
-          onPress={() => navigation.navigate("User")}
+          onPress={() => tabNavigation.navigate("ProfileTab")}
         >
           <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
         </TouchableOpacity>
@@ -67,7 +73,7 @@ export default function RoutinesScreen() {
 
         {/* Pre-made Routines */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pre-made Routines</Text>
+          <Text style={styles.sectionTitle}>Routines for your goals</Text>
           <Text style={styles.sectionSubtitle}>
             Designed by professional trainers
           </Text>
@@ -132,7 +138,7 @@ export default function RoutinesScreen() {
                   <TouchableOpacity
                     style={styles.startBtn}
                     onPress={() =>
-                      navigation.navigate("Workout", {
+                      navigation.navigate("RoutineDetails", {
                         routineId: routine.id,
                       })
                     }

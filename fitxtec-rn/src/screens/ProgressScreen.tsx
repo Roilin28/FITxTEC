@@ -13,7 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import colors from "../theme/color";
 import { LineChart, BarChart } from "react-native-chart-kit";
 import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
 const screenW = Dimensions.get("window").width;
 const CARD_PAD = 14;
@@ -31,12 +31,12 @@ const chartConfig = {
   propsForDots: { r: "3" },
 };
 
-type RootStackParamList = {
-  Home: undefined;
-  User: undefined;
-  Workout: { routineId: string };
-  Routines: undefined;
-  RoutineDetails: { routineId: string };
+type TabParamList = {
+  HomeTab: undefined;
+  RoutinesTab: undefined;
+  WorkoutTab: undefined;
+  ProgressTab: undefined;
+  ProfileTab: undefined;
 };
 
 type PR = { name: string; date: string; value: string; delta: string };
@@ -176,8 +176,7 @@ export default function ProgressScreen() {
     );
   };
 
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -186,7 +185,7 @@ export default function ProgressScreen() {
         <Text style={styles.brand}>FITxTEC</Text>
         <TouchableOpacity
           style={styles.profileBtn}
-          onPress={() => navigation.navigate("User")}
+          onPress={() => navigation.navigate("ProfileTab")}
         >
           <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
         </TouchableOpacity>
