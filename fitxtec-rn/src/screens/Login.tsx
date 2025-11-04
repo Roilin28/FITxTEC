@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,11 +16,20 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { loginWithEmailPassword } from "../services/login";
 import { useAuth } from "../services/AuthContext";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
+import Constants from "expo-constants";
+import { collection, getDocs, query, where, addDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
 
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Tabs: undefined;
+  SignUp1: undefined;
+  SignUpTraining: { usuario: any };
+  SignUpSettings: { usuario: any };
 };
 
 export default function LoginScreen() {
@@ -34,14 +43,117 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // const onLogin = () => {
-  //   console.log({ email, password });
-  //   navigation.reset({
-  //     index: 0,
-  //     routes: [{ name: "Tabs" as keyof RootStackParamList }],
-  //   });
-  // }; 
-  
+  const googleExtra = (Constants.expoConfig?.extra as any)?.google ?? {};
+  const demoAuth = (Constants.expoConfig?.extra as any)?.demoAuth === true;
+  const isExpoGo = Constants.appOwnership === "expo";
+  const hasAndroidClientId =
+    typeof googleExtra.androidClientId === "string" &&
+    !googleExtra.androidClientId?.startsWith("REPLACE_ME_");
+  const proxyRedirectUri = isExpoGo
+    ? makeRedirectUri({ useProxy: true } as any)
+    : undefined;
+  const expectedAuthProxy = `https://auth.expo.io/@${
+    (Constants as any)?.expoConfig?.owner ??
+    (Constants as any)?.expoConfig?.username ??
+    "unknown"
+  }/${(Constants as any)?.expoConfig?.slug ?? "app"}`;
+  let usernameHint: string | undefined;
+  try {
+    const host = proxyRedirectUri?.split("://")[1]?.split("/")[0] || "";
+    const firstLabel = host.split(".")[0] || "";
+    const parts = firstLabel.split("-");
+    if (parts.length >= 3) usernameHint = parts[1];
+  } catch {}
+  const expectedAuthProxyHint = usernameHint
+    ? `https://auth.expo.io/@${usernameHint}/${
+        (Constants as any)?.expoConfig?.slug ?? "app"
+      }`
+    : undefined;
+  const safeTail = (s?: string) =>
+    typeof s === "string" && s.length > 8 ? s.slice(-8) : s ? s : "none";
+  const computedProxyRedirect =
+    isExpoGo && proxyRedirectUri
+      ? `${expectedAuthProxy}?returnUrl=${encodeURIComponent(proxyRedirectUri)}`
+      : undefined;
+  const googleConfig: any =
+    Platform.OS === "android" && (isExpoGo || !hasAndroidClientId)
+      ? {
+          expoClientId: googleExtra.expoClientId,
+          androidClientId: googleExtra.expoClientId,
+          webClientId: googleExtra.webClientId,
+          redirectUri: expectedAuthProxy,
+          scopes: ["openid", "profile", "email"],
+        }
+      : {
+          expoClientId: googleExtra.expoClientId,
+          androidClientId: googleExtra.androidClientId,
+          iosClientId: googleExtra.iosClientId,
+          webClientId: googleExtra.webClientId,
+          scopes: ["openid", "profile", "email"],
+        };
+
+  const [request, response, promptAsync] = Google.useAuthRequest(googleConfig);
+
+  const completeLoginWithEmail = async (email: string, name?: string) => {
+    const q = query(collection(db, "usuarios"), where("email", "==", email));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      const doc = snap.docs[0];
+      const u = { id: doc.id, ...(doc.data() as any) };
+      setUser(u);
+      navigation.reset({ index: 0, routes: [{ name: "Tabs" as never }] });
+      return;
+    }
+
+    const randomPwd = Math.random().toString(36).slice(2, 10);
+    const minimalUser = {
+      email,
+      contrasenna: randomPwd,
+      nombre: name ?? "",
+      createdAt: new Date(),
+    };
+    const docRef = await addDoc(collection(db, "usuarios"), minimalUser);
+
+    navigation.navigate("SignUpTraining", {
+      usuario: { id: docRef.id, ...minimalUser },
+    } as any);
+  };
+
+  const handleGoogleSuccess = async (accessToken: string) => {
+    try {
+      const profileRes = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      const profile = await profileRes.json();
+
+      const emailFromGoogle: string | undefined = profile?.email;
+      if (!emailFromGoogle) {
+        setError("No se pudo obtener el email de Google");
+        return;
+      }
+      await completeLoginWithEmail(emailFromGoogle, profile?.name ?? undefined);
+    } catch (e) {
+      console.error(e);
+      setError("Error al iniciar con Google");
+    }
+  };
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const accessToken = response.authentication?.accessToken as
+        | string
+        | undefined;
+      if (accessToken) {
+        handleGoogleSuccess(accessToken);
+      }
+    } else if (response?.type) {
+    }
+  }, [response]);
+
   const onLogin = async () => {
     if (loading) return;
     setError(null);
@@ -65,11 +177,27 @@ export default function LoginScreen() {
       setLoading(false);
     }
   };
-  
 
-  const onGoogle = () => {
-    // TODO: implementar Google (expo-auth-session o Firebase)
-    console.log("Google sign-in");
+  const onGoogle = async () => {
+    try {
+      if (demoAuth) {
+        // Modo DEMO: sin OAuth real. Usa un email fijo para simular “Continuar con Google”.
+        const demoEmail = "isasctopz@gmail.com";
+        const demoName = "Isaac Rojas";
+        await completeLoginWithEmail(demoEmail, demoName);
+        return;
+      }
+      const useProxy =
+        isExpoGo || (Platform.OS === "android" && !hasAndroidClientId);
+      const res = await promptAsync({ useProxy });
+      if (res?.type === "success") {
+        const token = res.authentication?.accessToken;
+        if (token) await handleGoogleSuccess(token);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Error al iniciar con Google");
+    }
   };
 
   const onApple = () => {
@@ -78,8 +206,6 @@ export default function LoginScreen() {
   };
 
   const onSignup = () => {
-    // TODO: navegar a SignUp
-    console.log("Go to SignUp");
     navigation.navigate("SignUp1" as never);
   };
 
@@ -102,99 +228,105 @@ export default function LoginScreen() {
 
             {/* Card */}
             <View style={styles.card}>
-          {/* Email */}
-          <View style={styles.inputWrapper}>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Email"
-              placeholderTextColor={colors.textMuted}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={styles.input}
-            />
+              {/* Email */}
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Email"
+                  placeholderTextColor={colors.textMuted}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.input}
+                />
+              </View>
+
+              {/* Password */}
+              <View style={[styles.inputWrapper, { marginTop: 12 }]}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Password"
+                  placeholderTextColor={colors.textMuted}
+                  secureTextEntry
+                  style={styles.input}
+                />
+              </View>
+
+              {/* Botón Login */}
+              <TouchableOpacity
+                onPress={onLogin}
+                activeOpacity={0.9}
+                style={styles.primaryBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Login"
+              >
+                <Text style={styles.primaryBtnText}>
+                  {loading ? "Cargando..." : "Login"}
+                </Text>
+              </TouchableOpacity>
+
+              {error && (
+                <Text style={styles.errorText} accessibilityLiveRegion="polite">
+                  {error}
+                </Text>
+              )}
+
+              {/* Separador */}
+              <View style={styles.separatorRow}>
+                <View style={styles.separatorLine} />
+                <Text style={styles.separatorText}>OR CONTINUE WITH</Text>
+                <View style={styles.separatorLine} />
+              </View>
+
+              {/* Google */}
+              <TouchableOpacity
+                onPress={onGoogle}
+                activeOpacity={0.9}
+                style={styles.googleBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Continue with Google"
+              >
+                <FontAwesome
+                  name="google"
+                  size={18}
+                  color={colors.text}
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.googleText}>
+                  {demoAuth ? "Continue with Google" : "Continue with Google"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Apple (solo iOS) */}
+              {Platform.OS === "ios" && (
+                <TouchableOpacity
+                  onPress={onApple}
+                  activeOpacity={0.9}
+                  style={[styles.googleBtn, { marginTop: 12 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Continue with Apple"
+                >
+                  <FontAwesome
+                    name="apple"
+                    size={18}
+                    color={colors.text}
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text style={styles.googleText}>Continue with Apple</Text>
+                </TouchableOpacity>
+              )}
+
+              <View style={styles.footerRow}>
+                <Text style={styles.footerText}>
+                  Don&apos;t have an account?{" "}
+                </Text>
+                <TouchableOpacity onPress={onSignup} accessibilityRole="link">
+                  <Text style={styles.signupLink}>Sign up</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-
-          {/* Password */}
-          <View style={[styles.inputWrapper, { marginTop: 12 }]}>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Password"
-              placeholderTextColor={colors.textMuted}
-              secureTextEntry
-              style={styles.input}
-            />
-          </View>
-
-          {/* Botón Login */}
-          <TouchableOpacity
-            onPress={onLogin}
-            activeOpacity={0.9}
-            style={styles.primaryBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Login"
-          >
-            <Text style={styles.primaryBtnText}>{loading ? "Cargando..." : "Login"}</Text>
-          </TouchableOpacity>
-
-          {error && (
-            <Text style={styles.errorText} accessibilityLiveRegion="polite">
-              {error}
-            </Text>
-          )}
-
-          {/* Separador */}
-          <View style={styles.separatorRow}>
-            <View style={styles.separatorLine} />
-            <Text style={styles.separatorText}>OR CONTINUE WITH</Text>
-            <View style={styles.separatorLine} />
-          </View>
-
-          {/* Google */}
-          <TouchableOpacity
-            onPress={onGoogle}
-            activeOpacity={0.9}
-            style={styles.googleBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Continue with Google"
-          >
-            <FontAwesome
-              name="google"
-              size={18}
-              color={colors.text}
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.googleText}>Continue with Google</Text>
-          </TouchableOpacity>
-
-          {/* Apple (solo iOS) */}
-          {Platform.OS === "ios" && (
-            <TouchableOpacity
-              onPress={onApple}
-              activeOpacity={0.9}
-              style={[styles.googleBtn, { marginTop: 12 }]}
-              accessibilityRole="button"
-              accessibilityLabel="Continue with Apple"
-            >
-              <FontAwesome
-                name="apple"
-                size={18}
-                color={colors.text}
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.googleText}>Continue with Apple</Text>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-            <TouchableOpacity onPress={onSignup} accessibilityRole="link">
-              <Text style={styles.signupLink}>Sign up</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

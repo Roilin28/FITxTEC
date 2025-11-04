@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Platform,
   ScrollView,
   Alert,
   ActivityIndicator,
@@ -13,7 +12,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import colors from "../theme/color";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -31,25 +29,10 @@ export default function SignUp1() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [name, setName] = useState("");
-  const [dob, setDob] = useState<Date | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const calculateAge = (birthDate: Date): number => {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-    return age;
-  };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -59,17 +42,6 @@ export default function SignUp1() {
   const onNext = async () => {
     if (!name.trim()) {
       Alert.alert("Error", "Por favor ingresa tu nombre completo.");
-      return;
-    }
-
-    if (!dob) {
-      Alert.alert("Error", "Por favor selecciona tu fecha de nacimiento.");
-      return;
-    }
-
-    const age = calculateAge(dob);
-    if (age < 13) {
-      Alert.alert("Error", "Debes tener al menos 13 años para registrarte.");
       return;
     }
 
@@ -90,7 +62,7 @@ export default function SignUp1() {
 
     setLoading(true);
     try {
-      const usuario = await signUpWithEmailPassword(email, password, name, dob);
+      const usuario = await signUpWithEmailPassword(email, password, name);
       if (!usuario) {
         Alert.alert(
           "Error",
@@ -99,6 +71,7 @@ export default function SignUp1() {
         return;
       }
       navigation.navigate("SignUpTraining", { usuario });
+      console.log({ name, email, password });
     } catch (error) {
       console.error(error);
       Alert.alert(
@@ -166,55 +139,6 @@ export default function SignUp1() {
                 autoCapitalize="words"
               />
             </View>
-          </View>
-
-          {/* Date of Birth */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Fecha de Nacimiento</Text>
-            <TouchableOpacity
-              style={styles.inputWrapper}
-              onPress={() => setShowPicker(true)}
-            >
-              <Ionicons
-                name="calendar-outline"
-                size={20}
-                color={colors.textMuted}
-                style={styles.inputIcon}
-              />
-              <Text
-                style={[
-                  styles.input,
-                  { color: dob ? colors.text : colors.textMuted },
-                ]}
-              >
-                {dob
-                  ? dob.toLocaleDateString("es-ES", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "Selecciona tu fecha de nacimiento"}
-              </Text>
-              <Ionicons
-                name="chevron-down"
-                size={20}
-                color={colors.textMuted}
-              />
-            </TouchableOpacity>
-
-            {showPicker && (
-              <DateTimePicker
-                mode="date"
-                value={dob || new Date(2000, 0, 1)}
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                maximumDate={new Date()}
-                onChange={(_, date) => {
-                  setShowPicker(false);
-                  if (date) setDob(date);
-                }}
-                themeVariant="dark"
-              />
-            )}
           </View>
 
           {/* Email Input */}

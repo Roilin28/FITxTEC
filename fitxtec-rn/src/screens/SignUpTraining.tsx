@@ -15,6 +15,7 @@ import colors from "../theme/color";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signUpTraining } from "../services/SignUp";
+import WebDateInput from "../../components/WebDateInput";
 
 type RootStackParamList = {
   SignUpTraining: { usuario: any };
