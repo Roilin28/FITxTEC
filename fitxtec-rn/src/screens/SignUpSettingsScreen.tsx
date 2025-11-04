@@ -16,6 +16,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signUpSettings } from "../services/SignUp";
 
+
 type RootStackParamList = {
   SignUpSettings: { usuario: any };
   SignUpTraining: { usuario: any };
