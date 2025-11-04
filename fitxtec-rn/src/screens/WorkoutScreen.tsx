@@ -27,6 +27,7 @@ import {
   EjercicioWorkout,
 } from "../services/rutinasEnProgreso";
 import { local_Notification_Finish_Workout } from "../services/notifications";
+import { sendWorkoutCompletedNotification, sendRoutineCompletedNotification } from "../services/webhooks";
 
 type RootStackParamList = {
   WorkoutMain: undefined;
@@ -158,7 +159,7 @@ export default function WorkoutScreen() {
         : undefined;
 
       // Crear la sesión de workout
-      await crearWorkoutSession(
+      const workoutSessionId = await crearWorkoutSession(
         rutinaEnProgresoId,
         user.id,
         rutinaEnProgreso.diaActual,
@@ -166,11 +167,42 @@ export default function WorkoutScreen() {
         duracion
       );
 
+      // Calcular volumen total
+      const volumen = ejercicios.reduce((total, ej) => {
+        return total + ej.series.reduce((sum, serie) => {
+          return sum + (serie.done ? serie.reps * serie.weight : 0);
+        }, 0);
+      }, 0);
+
       // Avanzar al siguiente día
       const result = await avanzarDiaRutina(rutinaEnProgresoId);
 
+      // Enviar notificaciones de workout completado
+      await sendWorkoutCompletedNotification(
+        user.nombre || "",
+        user.email,
+        {
+          workoutId: workoutSessionId,
+          duration: duracion,
+          volume: Math.round(volumen),
+          exercises: ejercicios.length,
+        }
+      );
+
       // Después de completar, volver para refrescar datos
       if (result.terminada) {
+        // Enviar notificación de rutina completada
+        await sendRoutineCompletedNotification(
+          user.nombre || "",
+          user.email,
+          {
+            routineId: rutinaEnProgreso.rutinaId,
+            routineName: rutina.nombre || "Rutina",
+            totalDays: rutinaEnProgreso.cantidadDias,
+            totalWorkouts: rutinaEnProgreso.cantidadDias,
+          }
+        );
+
         Alert.alert("¡Felicidades!", "Has completado toda la rutina.", [
           {
             text: "OK",

@@ -15,6 +15,7 @@ import colors from "../theme/color";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signUpSettings } from "../services/SignUp";
+import { sendWelcomeEmail } from "../services/webhooks";
 
 type RootStackParamList = {
   SignUpSettings: { usuario: any };
@@ -39,7 +40,13 @@ export default function SignUpSettingsScreen() {
 
     setLoading(true);
     try {
+      // Guardamos los datos
       await signUpSettings(weightUnit, distanceUnit, usuario);
+
+      // Enviamos correo de bienvenida
+      await sendWelcomeEmail(usuario.nombre || "", usuario.email);
+
+      // Navegamos al login
       Alert.alert(
         "¡Cuenta creada!",
         "Tu cuenta ha sido creada exitosamente. Bienvenido a FITxTEC.",
@@ -51,8 +58,8 @@ export default function SignUpSettingsScreen() {
         ]
       );
     } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Ocurrió un error. Por favor intenta de nuevo.");
+      console.error("Error en registro final:", error);
+      Alert.alert("Error", "Ocurrió un error al completar el registro.");
     } finally {
       setLoading(false);
     }

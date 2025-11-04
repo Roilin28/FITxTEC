@@ -47,6 +47,9 @@ function startOfISOWeek(d: Date) {
 }
 
 function weekIndexFrom(dateMs: number, baseW0: Date): number {
+  if (!baseW0 || !(baseW0 instanceof Date) || isNaN(baseW0.getTime())) {
+    return 0; // Retornar 0 si baseW0 no es válido
+  }
   const ms = dateMs - baseW0.getTime();
   const w = Math.floor(ms / (7*24*3600*1000));
   return Math.max(-4, Math.min(0, w)); // sólo W-4..W0
@@ -136,9 +139,13 @@ export async function computeUserStats(uid: string,  backfill = false): Promise<
 
   for (const d of snap.docs) {
     const data = d.data() as any;
-    const t = (data?.fechaTimestamp instanceof Timestamp)
-      ? data.fechaTimestamp.toDate().getTime()
-      : Number(data?.createdAt ?? Date.parse(data?.fecha ?? "")) || 0;
+    let t = 0;
+    if (data?.fechaTimestamp instanceof Timestamp) {
+      const date = data.fechaTimestamp.toDate();
+      t = date ? date.getTime() : 0;
+    } else {
+      t = Number(data?.createdAt ?? Date.parse(data?.fecha ?? "")) || 0;
+    }
 
     if (t >= THIRTY_D) sessionsLast30d++;
 

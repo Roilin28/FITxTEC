@@ -16,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { loginWithEmailPassword } from "../services/login";
 import { useAuth } from "../services/AuthContext";
+import { sendLoginNotification } from "../services/webhooks";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
@@ -102,6 +103,10 @@ export default function LoginScreen() {
       const doc = snap.docs[0];
       const u = { id: doc.id, ...(doc.data() as any) };
       setUser(u);
+
+      // Enviar notificación de login (Google)
+      await sendLoginNotification(u.nombre || "", u.email, "google");
+
       navigation.reset({ index: 0, routes: [{ name: "Tabs" as never }] });
       return;
     }
@@ -165,6 +170,10 @@ export default function LoginScreen() {
       } else {
         console.log("Login: ", user, user.id);
         await setUser(user);
+
+        // Enviar notificación de login
+        await sendLoginNotification(user.nombre || "", user.email, "email");
+
         navigation.reset({
           index: 0,
           routes: [{ name: "Tabs" as keyof RootStackParamList }],

@@ -43,8 +43,7 @@ export async function signUpWithEmailPassword(email: string, contrasenna: string
     email,
     contrasenna,
     nombre,
-    // edad se calculará en la pantalla de Training con la fecha de nacimiento
-    edad: undefined,
+    // edad se calculará en la pantalla de Training con la fecha de nacimiento (no incluimos edad aquí)
     objetivo: "",
     experiencia: "",
     workoutsPorSemana: "",
@@ -55,12 +54,16 @@ export async function signUpWithEmailPassword(email: string, contrasenna: string
   return UsuarioIngresar;
 }
 
-export async function signUpTraining(goal: string, experience: string, workouts: string, usuario: UsuarioIngresar, fechaNacimiento: Date): Promise<UsuarioIngresar | null> {
+export async function signUpTraining(goal: string, experience: string, workouts: string, usuario: UsuarioIngresar, fechaNacimiento?: Date): Promise<UsuarioIngresar | null> {
   if (!usuario) {
     return null;
   }
 
-  const edad = Math.floor((new Date().getTime() - fechaNacimiento.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+  // Calcular edad solo si fechaNacimiento está disponible
+  let edad: number | undefined = undefined;
+  if (fechaNacimiento && fechaNacimiento instanceof Date && !isNaN(fechaNacimiento.getTime())) {
+    edad = Math.floor((new Date().getTime() - fechaNacimiento.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+  }
 
   const updatedUsuario: UsuarioIngresar = {
     ...usuario,
@@ -71,6 +74,17 @@ export async function signUpTraining(goal: string, experience: string, workouts:
   };
 
   return updatedUsuario;
+}
+
+// Helper function para remover campos undefined (Firestore no acepta undefined)
+function removeUndefinedFields<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: any = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      cleaned[key] = obj[key];
+    }
+  }
+  return cleaned;
 }
 
 export async function signUpSettings(weightUnit: string, distanceUnit: string, usuario: UsuarioIngresar) {
@@ -88,18 +102,22 @@ export async function signUpSettings(weightUnit: string, distanceUnit: string, u
     // upsert por email
     const q = query(collection(db, 'usuarios'), where('email', '==', usuario.email));
     const snap = await getDocs(q);
+    
+    // Remover campos undefined antes de guardar
+    const cleanedUsuario = removeUndefinedFields(updatedUsuario);
+    
     if (snap.empty) {
       const docRef = await addDoc(collection(db, "usuarios"), {
-        ...updatedUsuario,
+        ...cleanedUsuario,
         createdAt: new Date(),
       });
       console.log("Documento agregado con ID:", docRef.id);
     } else {
       const docRef = snap.docs[0].ref;
       await updateDoc(docRef, {
-        ...updatedUsuario,
+        ...cleanedUsuario,
         updatedAt: new Date(),
-      } as any);
+      });
       console.log("Documento actualizado:", docRef.id);
     }
   } catch (error) {
