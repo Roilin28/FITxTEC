@@ -99,9 +99,35 @@ export default function UserScreen() {
     }
   };
 
-  const formatDate = (timestamp?: number) => {
+  const formatDate = (timestamp?: number | any) => {
     if (!timestamp) return "N/A";
-    const date = new Date(timestamp);
+    
+    // Manejar Timestamp de Firestore
+    let ms: number;
+    if (timestamp?.toMillis) {
+      // Es un Timestamp de Firestore
+      ms = timestamp.toMillis();
+    } else if (timestamp?.toDate) {
+      // Es un Timestamp de Firestore con método toDate
+      ms = timestamp.toDate().getTime();
+    } else if (timestamp?.seconds) {
+      // Timestamp en formato {seconds, nanoseconds}
+      ms = timestamp.seconds * 1000;
+    } else if (typeof timestamp === "number") {
+      // Ya es un número (timestamp en milisegundos)
+      ms = timestamp;
+    } else if (timestamp instanceof Date) {
+      // Es un objeto Date
+      ms = timestamp.getTime();
+    } else {
+      return "N/A";
+    }
+    
+    const date = new Date(ms);
+    if (isNaN(date.getTime())) {
+      return "N/A";
+    }
+    
     return date.toLocaleDateString("es-ES", {
       year: "numeric",
       month: "long",
@@ -390,12 +416,6 @@ export default function UserScreen() {
               <Text style={styles.infoLabel}>Miembro desde</Text>
               <Text style={styles.infoValue}>
                 {formatDate((user as any)?.createdAt)}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Último acceso</Text>
-              <Text style={styles.infoValue}>
-                {formatDate((user as any)?.lastLoginAt)}
               </Text>
             </View>
           </View>
