@@ -14,6 +14,7 @@ import WorkoutScreen from "../screens/WorkoutScreen";
 import RoutineDetailsScreen from "../screens/RoutineDetailsScreen";
 import CalendarScreen from "../screens/CalendarScreen";
 import SettingsScreen from "../screens/SettingsScreen";
+import InsightsHistoryScreen from "../screens/InsightsHistoryScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -52,6 +53,15 @@ function ProfileStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileMain" component={UserScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function ProgressStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ProgressMain" component={ProgressScreen} />
+      <Stack.Screen name="InsightsHistory" component={InsightsHistoryScreen} />
     </Stack.Navigator>
   );
 }
@@ -122,7 +132,7 @@ export default function Tabs() {
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Routines" component={RoutinesStack} />
       <Tab.Screen name="Workout" component={WorkoutStack} />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Progress" component={ProgressStack} />
       <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );
