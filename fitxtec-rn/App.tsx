@@ -16,6 +16,10 @@ import { AuthProvider } from "./src/services/AuthContext";
 import SignUp1 from "./src/screens/SignUp1";
 import SignUpTrainingScreen from "./src/screens/SignUpTraining";
 import SignUpSettingsScreen from "./src/screens/SignUpSettingsScreen";
+import InsightsHistoryScreen from "./src/screens/InsightsHistoryScreen";
+
+
+
 const Stack = createNativeStackNavigator();
 
 const navTheme = {
@@ -41,6 +45,8 @@ export default function App() {
           <Stack.Screen name="SignUp1" component={SignUp1} />
           <Stack.Screen name="SignUpTraining" component={SignUpTrainingScreen} />
           <Stack.Screen name="SignUpSettings" component={SignUpSettingsScreen} />
+          <Stack.Screen name="InsightsHistory" component={InsightsHistoryScreen} />
+
         </Stack.Navigator>
       </NavigationContainer>
       </AuthProvider>
