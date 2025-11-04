@@ -99,6 +99,7 @@ export const userStyles = StyleSheet.create({
         color: "#ccc",
         fontSize: 13,
         marginTop: 6,
+        marginBottom: 8,
     },
     input: {
         backgroundColor: "#1a1c24",
@@ -108,6 +109,34 @@ export const userStyles = StyleSheet.create({
         fontSize: 14,
         borderWidth: 1,
         borderColor: "#2f2f2f",
+    },
+    optionsRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 10,
+        marginTop: 4,
+    },
+    optionChip: {
+        backgroundColor: "#1a1c24",
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderWidth: 2,
+        borderColor: "#2f2f2f",
+        minWidth: 100,
+    },
+    optionChipActive: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+    },
+    optionChipText: {
+        color: "#fff",
+        fontSize: 13,
+        fontWeight: "600",
+        textAlign: "center",
+    },
+    optionChipTextActive: {
+        color: colors.primaryText,
     },
 
     // 🔹 SWITCHES / NOTIFICACIONES
@@ -169,5 +198,53 @@ primaryBtnText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+},
+// 🔹 ESTADÍSTICAS
+statRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 8,
+},
+statItem: {
+    flex: 1,
+    backgroundColor: "#1a1c24",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#2f2f2f",
+},
+statValue: {
+    color: colors.primary,
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 4,
+},
+statLabel: {
+    color: "#aaa",
+    fontSize: 12,
+    textAlign: "center",
+},
+// 🔹 INFORMACIÓN
+infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#1a1c24",
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#2f2f2f",
+},
+infoLabel: {
+    color: "#ccc",
+    fontSize: 14,
+    fontWeight: "500",
+},
+infoValue: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
 },
 });

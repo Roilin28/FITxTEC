@@ -1,7 +1,16 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Picker } from "@react-native-picker/picker";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import colors from "../theme/color";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -16,124 +25,379 @@ type RootStackParamList = {
 export default function SignUpSettingsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const route = useRoute();
+  const route = useRoute();
   const { usuario } = route.params as { usuario: any };
-  console.log("Received usuario:", usuario);
-  const [weightUnit, setWeightUnit] = useState("");
-  const [distanceUnit, setDistanceUnit] = useState("");
+  const [weightUnit, setWeightUnit] = useState("kg");
+  const [distanceUnit, setDistanceUnit] = useState("km");
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = () => {
-    // Guardar datos o enviar al backend si es necesario
-        console.log({ weightUnit, distanceUnit });
-        signUpSettings(weightUnit, distanceUnit, usuario);
-    navigation.navigate("Login");
+  const onFinish = async () => {
+    if (!weightUnit || !distanceUnit) {
+      Alert.alert("Error", "Por favor selecciona todas las unidades.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signUpSettings(weightUnit, distanceUnit, usuario);
+      Alert.alert(
+        "¡Cuenta creada!",
+        "Tu cuenta ha sido creada exitosamente. Bienvenido a FITxTEC.",
+        [
+          {
+            text: "Continuar",
+            onPress: () => navigation.navigate("Login"),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Ocurrió un error. Por favor intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Text style={styles.title}>FITxTEC</Text>
-        <Text style={styles.subtitle}>App Settings</Text>
+      <LinearGradient
+        colors={["#0e0f13", "#10131b", "#151820"]}
+        style={StyleSheet.absoluteFillObject}
+      />
 
-        <View style={styles.card}>
-          <Text style={styles.label}>Weight Unit</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
-            <Picker
-              selectedValue={weightUnit}
-              onValueChange={setWeightUnit}
-              style={{ color: "white" }} // 👈 color de texto igual al UserScreen
-              dropdownIconColor="white" // 👈 icono blanco igual
-              placeholder="Select weight unit"
-            >
-              <Picker.Item label="Kilograms (kg)" value="kg" />
-              <Picker.Item label="Pounds (lbs)" value="lbs" />
-            </Picker>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={28} color="#ffffff" />
+        </TouchableOpacity>
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: "100%" }]} />
           </View>
-
-          <Text style={styles.label}>Distance Unit</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#1E1E1E" }]}>
-            <Picker
-                selectedValue={distanceUnit}
-                onValueChange={setDistanceUnit}
-                style={{ color: "white" }} // 👈 color de texto igual al UserScreen
-                dropdownIconColor="white" // 👈 icono blanco igual
-                placeholder="Select distance unit"
-                
-            >
-              <Picker.Item label="Kilometers (km)" value="km" />
-              <Picker.Item label="Miles (mi)" value="mi" />
-            </Picker>
-          </View>
-
-          <TouchableOpacity onPress={onFinish} style={styles.primaryBtn}>
-            <Text style={styles.primaryBtnText}>Create Account</Text>
-          </TouchableOpacity>
+          <Text style={styles.progressText}>Paso 3 de 3</Text>
         </View>
       </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Title Section */}
+        <View style={styles.titleSection}>
+          <Ionicons name="settings-outline" size={40} color={colors.primary} />
+          <Text style={styles.title}>Configuración</Text>
+          <Text style={styles.subtitle}>
+            Último paso: configura tus preferencias
+          </Text>
+        </View>
+
+        {/* Form Card */}
+        <View style={styles.card}>
+          {/* Weight Unit */}
+          <View style={styles.inputContainer}>
+            <View style={styles.labelRow}>
+              <Ionicons
+                name="scale-outline"
+                size={20}
+                color={colors.primary}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.label}>Unidad de Peso</Text>
+            </View>
+            <View style={styles.optionsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  weightUnit === "kg" && styles.optionButtonActive,
+                ]}
+                onPress={() => setWeightUnit("kg")}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    weightUnit === "kg" && styles.optionButtonTextActive,
+                  ]}
+                >
+                  Kilogramos (kg)
+                </Text>
+                {weightUnit === "kg" && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.primaryText}
+                  />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  weightUnit === "lbs" && styles.optionButtonActive,
+                ]}
+                onPress={() => setWeightUnit("lbs")}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    weightUnit === "lbs" && styles.optionButtonTextActive,
+                  ]}
+                >
+                  Libras (lbs)
+                </Text>
+                {weightUnit === "lbs" && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.primaryText}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Distance Unit */}
+          <View style={styles.inputContainer}>
+            <View style={styles.labelRow}>
+              <Ionicons
+                name="map-outline"
+                size={20}
+                color={colors.primary}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.label}>Unidad de Distancia</Text>
+            </View>
+            <View style={styles.optionsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  distanceUnit === "km" && styles.optionButtonActive,
+                ]}
+                onPress={() => setDistanceUnit("km")}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    distanceUnit === "km" && styles.optionButtonTextActive,
+                  ]}
+                >
+                  Kilómetros (km)
+                </Text>
+                {distanceUnit === "km" && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.primaryText}
+                  />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  distanceUnit === "mi" && styles.optionButtonActive,
+                ]}
+                onPress={() => setDistanceUnit("mi")}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    distanceUnit === "mi" && styles.optionButtonTextActive,
+                  ]}
+                >
+                  Millas (mi)
+                </Text>
+                {distanceUnit === "mi" && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.primaryText}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Create Account Button */}
+          <TouchableOpacity
+            onPress={onFinish}
+            style={[styles.primaryBtn, loading && styles.primaryBtnDisabled]}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.primaryText} />
+            ) : (
+              <>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.primaryText}
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.primaryBtnText}>Crear Cuenta</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* Footer */}
+          <View style={styles.footerRow}>
+            <Text style={styles.footerText}>
+              Al crear tu cuenta, aceptas nuestros{" "}
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.linkText}>Términos de Servicio</Text>
+            </TouchableOpacity>
+            <Text style={styles.footerText}> y </Text>
+            <TouchableOpacity>
+              <Text style={styles.linkText}>Política de Privacidad</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  container: {
+  safe: {
     flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 48,
     backgroundColor: colors.bg,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  backButton: {
+    padding: 4,
+    marginBottom: 16,
+  },
+  progressContainer: {
+    alignItems: "center",
+  },
+  progressBar: {
+    width: "100%",
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+  },
+  progressText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  scrollContent: {
+    padding: 20,
+    paddingTop: 0,
+    paddingBottom: 40,
+  },
+  titleSection: {
+    marginBottom: 32,
+    alignItems: "center",
   },
   title: {
     color: colors.primary,
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: "800",
     letterSpacing: 0.5,
-    marginTop: 6,
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
     color: colors.textMuted,
-    fontSize: 16,
-    marginTop: 6,
-    marginBottom: 22,
+    fontSize: 15,
+    textAlign: "center",
   },
   card: {
-    width: "100%",
-    maxWidth: 360,
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 20,
+    padding: 24,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  inputContainer: {
+    marginBottom: 28,
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
   label: {
     color: colors.text,
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: "600",
   },
-  inputWrapper: {
+  optionsContainer: {
+    flexDirection: "row",
+    gap: 12,
+    flexWrap: "wrap",
+  },
+  optionButton: {
+    flex: 1,
+    minWidth: 140,
     backgroundColor: colors.input,
     borderRadius: 12,
-    borderWidth: 1,
+    padding: 16,
+    borderWidth: 2,
     borderColor: colors.border,
-    height: 44,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  input: {
+  optionButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  optionButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
     color: colors.text,
-    paddingHorizontal: 14,
-    fontSize: 15,
+  },
+  optionButtonTextActive: {
+    color: colors.primaryText,
   },
   primaryBtn: {
+    flexDirection: "row",
     backgroundColor: colors.primary,
     borderRadius: 12,
-    height: 44,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 18,
+    marginTop: 8,
+  },
+  primaryBtnDisabled: {
+    opacity: 0.6,
   },
   primaryBtnText: {
     color: colors.primaryText,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
+  },
+  footerRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginTop: 24,
+    alignItems: "center",
+  },
+  footerText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    textAlign: "center",
+  },
+  linkText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

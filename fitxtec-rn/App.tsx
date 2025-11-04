@@ -1,18 +1,21 @@
 // App.tsx
-import React from "react";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import React, { useEffect, useRef } from "react";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  CommonActions,
+  NavigationContainerRef,
+} from "@react-navigation/native";
+import * as WebBrowser from "expo-web-browser";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
+import { View, ActivityIndicator } from "react-native";
 import LoginScreen from "./src/screens/Login";
 import Tabs from "./src/navigation/Tabs";
-import WorkoutScreen from "./src/screens/WorkoutScreen";
-import RoutinesScreen from "./src/screens/RoutinesScreen";
 import colors from "./src/theme/color";
 import NotFoundScreen from "./src/screens/404Screen";
-import UserScreen from "./src/screens/UserScreen";
-import CalendarScreen from "./src/screens/CalendarScreen";
 
-import { AuthProvider } from "./src/services/AuthContext";
+import { AuthProvider, useAuth } from "./src/services/AuthContext";
 import SignUp1 from "./src/screens/SignUp1";
 import SignUpTrainingScreen from "./src/screens/SignUpTraining";
 import SignUpSettingsScreen from "./src/screens/SignUpSettingsScreen";
@@ -22,33 +25,65 @@ import InsightsHistoryScreen from "./src/screens/InsightsHistoryScreen";
 
 const Stack = createNativeStackNavigator();
 
+// Completa sesiones de auth incluso en arranques en frío (debe estar en ámbito de módulo)
+WebBrowser.maybeCompleteAuthSession();
+
 const navTheme = {
   ...DefaultTheme,
   colors: { ...DefaultTheme.colors, background: colors.bg },
 };
+
+function RootNavigator() {
+  const { user, loading } = useAuth();
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+
+  // Redirigir a Login cuando el usuario cierra sesión
+  useEffect(() => {
+    if (!loading && !user && navigationRef.current) {
+      navigationRef.current.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        })
+      );
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: colors.bg,
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Tabs" component={Tabs} />
+        <Stack.Screen name="NotFound" component={NotFoundScreen} />
+        <Stack.Screen name="SignUp1" component={SignUp1} />
+        <Stack.Screen name="SignUpTraining" component={SignUpTrainingScreen} />
+        <Stack.Screen name="SignUpSettings" component={SignUpSettingsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
 
 export default function App() {
   return (
     <>
       <StatusBar style="light" />
       <AuthProvider>
-      <NavigationContainer theme={navTheme}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="User" component={UserScreen} />
-          <Stack.Screen name="NotFound" component={NotFoundScreen} />
-          <Stack.Screen name="Tabs" component={Tabs} />
-          <Stack.Screen name="Workout" component={WorkoutScreen} />
-          <Stack.Screen name="Routines" component={RoutinesScreen} />
-          <Stack.Screen name="RoutineDetails" component={RoutinesScreen} />
-          <Stack.Screen name="Calendar" component={CalendarScreen} />
-          <Stack.Screen name="SignUp1" component={SignUp1} />
-          <Stack.Screen name="SignUpTraining" component={SignUpTrainingScreen} />
-          <Stack.Screen name="SignUpSettings" component={SignUpSettingsScreen} />
-          <Stack.Screen name="InsightsHistory" component={InsightsHistoryScreen} />
-
-        </Stack.Navigator>
-      </NavigationContainer>
+        <RootNavigator />
       </AuthProvider>
     </>
   );

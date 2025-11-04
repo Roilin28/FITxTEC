@@ -2,6 +2,7 @@
   "expo": {
     "name": "fitxtec-rn",
     "slug": "fitxtec-rn",
+    "owner": "irojas44",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -43,6 +44,15 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "google": {
+        "expoClientId": "152331365997-frfpmald72k4kl1l6kgbpjtfkdm32a0e.apps.googleusercontent.com",
+        "androidClientId": "REPLACE_ME_ANDROID_CLIENT_ID.apps.googleusercontent.com",
+        "iosClientId": "REPLACE_ME_IOS_CLIENT_ID.apps.googleusercontent.com",
+        "webClientId": "152331365997-frfpmald72k4kl1l6kgbpjtfkdm32a0e.apps.googleusercontent.com"
+      },
+      "demoAuth": true
     }
   }
 }

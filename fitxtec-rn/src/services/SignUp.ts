@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 export interface UsuarioIngresar {
@@ -30,7 +30,7 @@ export async function validatePassword(password: string): Promise<boolean> {
   return Promise.resolve(password.length >= 6);
 }
 
-export async function signUpWithEmailPassword(email: string, contrasenna: string, nombre: string, fechaNacimiento: Date): Promise<UsuarioIngresar | null> {
+export async function signUpWithEmailPassword(email: string, contrasenna: string, nombre: string): Promise<UsuarioIngresar | null> {
   const emailValido = await validateEmail(email);
   const contrasennaValida = await validatePassword(contrasenna);
   const emailExistente = await comprobarEmail(email);
@@ -39,13 +39,12 @@ export async function signUpWithEmailPassword(email: string, contrasenna: string
   if (!emailValido || !contrasennaValida || emailExistente) {
     return null;
   }
-  const edad = Math.floor((new Date().getTime() - fechaNacimiento.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-  console.log(edad);
   const UsuarioIngresar: UsuarioIngresar = {
     email,
     contrasenna,
     nombre,
-    edad, 
+    // edad se calculará en la pantalla de Training con la fecha de nacimiento
+    edad: undefined,
     objetivo: "",
     experiencia: "",
     workoutsPorSemana: "",
@@ -56,16 +55,19 @@ export async function signUpWithEmailPassword(email: string, contrasenna: string
   return UsuarioIngresar;
 }
 
-export async function signUpTraining(goal: string, experience: string, workouts: string, usuario: UsuarioIngresar): Promise<UsuarioIngresar | null> {
+export async function signUpTraining(goal: string, experience: string, workouts: string, usuario: UsuarioIngresar, fechaNacimiento: Date): Promise<UsuarioIngresar | null> {
   if (!usuario) {
     return null;
   }
+
+  const edad = Math.floor((new Date().getTime() - fechaNacimiento.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
 
   const updatedUsuario: UsuarioIngresar = {
     ...usuario,
     objetivo: goal,
     experiencia: experience,
     workoutsPorSemana: workouts,
+    edad,
   };
 
   return updatedUsuario;
@@ -83,13 +85,25 @@ export async function signUpSettings(weightUnit: string, distanceUnit: string, u
   };
 
    try {
-    const docRef = await addDoc(collection(db, "usuarios"), {
-      ...updatedUsuario,
-      createdAt: new Date(),
-    });
-    console.log("Documento agregado con ID:", docRef.id);
+    // upsert por email
+    const q = query(collection(db, 'usuarios'), where('email', '==', usuario.email));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      const docRef = await addDoc(collection(db, "usuarios"), {
+        ...updatedUsuario,
+        createdAt: new Date(),
+      });
+      console.log("Documento agregado con ID:", docRef.id);
+    } else {
+      const docRef = snap.docs[0].ref;
+      await updateDoc(docRef, {
+        ...updatedUsuario,
+        updatedAt: new Date(),
+      } as any);
+      console.log("Documento actualizado:", docRef.id);
+    }
   } catch (error) {
-    console.error("Error al agregar documento:", error);
+    console.error("Error guardando documento:", error);
   }
 
 }

@@ -42,3 +42,8 @@ app-example
 /ios
 /android
 .env
+
+# Firebase Admin credentials (IMPORTANT: Never commit!)
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+*-firebase-adminsdk*.json

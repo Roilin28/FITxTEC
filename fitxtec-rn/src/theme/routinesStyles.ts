@@ -41,11 +41,16 @@ const styles = StyleSheet.create({
 
     // SECTION
     section: { marginTop: 1 },
+    sectionHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginLeft: 20,
+        marginBottom: 4,
+    },
     sectionTitle: {
         color: "#ffffff",
         fontSize: 18,
         fontWeight: "700",
-        marginLeft: 20,
     },
     sectionSubtitle: {
         color: "#999",
@@ -159,13 +164,26 @@ const styles = StyleSheet.create({
 
     // AI SECTION
     aiCard: {
-        backgroundColor: "#15171f",
         borderRadius: 16,
-        padding: 20,
         marginTop: 12,
         marginHorizontal: 20,
-        borderWidth: 0,
-        borderColor: "#2b2e35",
+        overflow: "hidden",
+    },
+    aiCardBackground: {
+        borderRadius: 16,
+        overflow: "hidden",
+    },
+    aiCardBackgroundImage: {
+        opacity: 0.4,
+    },
+    aiCardOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(21, 23, 31, 0.75)",
+    },
+    aiCardContent: {
+        padding: 20,
+        position: "relative",
+        zIndex: 1,
     },
     aiHeader: {
         flexDirection: "row",
