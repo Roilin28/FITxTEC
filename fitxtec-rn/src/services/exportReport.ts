@@ -11,7 +11,8 @@ const MG: MGKey[] = [
 export async function exportProgressPDF(
   uid: string,
   stats: UserStats,
-  advice?: string[]    
+  advice?: string[] , 
+  userName?: string   
 ) {
   const tips = advice ?? [];
   const title = "FITxTEC – Progress Report";
@@ -38,7 +39,8 @@ export async function exportProgressPDF(
       ((stats.totals.volumeWeekCurrent - stats.totals.volumeWeekPrev) /
         Math.max(stats.totals.volumeWeekPrev, 1)) * 100
     ) || 0;
-
+  const who = userName && userName.trim() ? userName : uid;
+  
   const html = `
   <!doctype html>
   <html>
@@ -70,7 +72,7 @@ export async function exportProgressPDF(
   </head>
   <body>
     <h1>${title}</h1>
-    <div class="sub">User: <b>${uid}</b> · Generated: ${now.toLocaleString()}</div>
+    <div class="sub">User: <b>${who}</b> · Generated: ${now.toLocaleString()}</div>
 
     <div class="kpis">
       <div class="kpi">

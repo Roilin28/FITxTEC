@@ -1,6 +1,7 @@
 // src/services/stats.ts
 import {
-  collection, query, where, getDocs, Timestamp, setDoc, doc,
+  collection, query, where, getDocs, Timestamp, setDoc, doc, onSnapshot, orderBy,
+  Unsubscribe,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -114,7 +115,7 @@ export function userStatsDoc(uid: string) {
 }
 
 /* -------------------- Cálculo principal -------------------- */
-export async function computeUserStats(uid: string): Promise<UserStats> {
+export async function computeUserStats(uid: string,  backfill = false): Promise<UserStats> {
   // 5 semanas: W-4..W0 (W0 = semana actual)
   const now = new Date();
   const W0 = startOfISOWeek(now);
@@ -183,6 +184,57 @@ export async function computeUserStats(uid: string): Promise<UserStats> {
 
 export async function saveUserStats(uid: string, stats: UserStats) {
   await setDoc(userStatsDoc(uid), stats, { merge: true });
+}
+
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+  let t: any;
+  return (...args: Parameters<T>) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+}
+
+/**
+ * Observa workoutSessions del usuario y dispara un recálculo de estadísticas
+ * cada vez que detecta un cambio. Devuelve una función `unsubscribe`.
+ *
+ * @param uid string - id del usuario (tu `user.id`)
+ * @param onStats (stats) => void - callback con nuevas estadísticas
+ * @param opts { backfill?: boolean, save?: boolean }
+ */
+
+export function watchAndComputeUserStats(
+  uid: string,
+  onStats: (s: UserStats) => void,
+  opts?: { backfill?: boolean; save?: boolean }
+): Unsubscribe {
+  const qRef = query(
+    collection(db, "workoutSessions"),
+    where("usuarioId", "==", uid),
+    orderBy("fechaTimestamp", "asc")
+  );
+
+  const run = debounce(async () => {
+    try {
+      const stats = await computeUserStats(uid, !!opts?.backfill);
+      onStats(stats);
+      if (opts?.save) {
+        await saveUserStats(uid, stats).catch(() => {});
+      }
+    } catch (e) {
+      console.log("[watchAndComputeUserStats] error:", e);
+    }
+  }, 350); // pequeño debounce para evitar explosión de cálculos
+
+  // Primer cálculo inmediato
+  run();
+
+  // Suscripción en tiempo real
+  const unsub = onSnapshot(qRef, () => {
+    run();
+  });
+
+  return unsub;
 }
 
 /* Helper para leer el último (opcional en tu UI) */

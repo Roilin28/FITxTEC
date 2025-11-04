@@ -1,21 +1,29 @@
 // src/screens/ProgressScreen.tsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
-  View, Text, StyleSheet, ScrollView, Dimensions,
-  TouchableOpacity, ActivityIndicator, Alert,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LineChart, BarChart } from "react-native-chart-kit";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import colors from "../theme/color";
 import { useAuth } from "../services/AuthContext";
 import { exportProgressPDF } from "../services/exportReport";
-
+import { db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import {
-  computeUserStats, saveUserStats, type UserStats, type MGKey,
+  computeUserStats, saveUserStats, type UserStats, type MGKey, watchAndComputeUserStats
 } from "../services/stats";
 import { createAndSaveInsights, getLatestInsight } from "../services/Insights";
 
@@ -44,6 +52,7 @@ const chartConfig = {
   propsForDots: { r: "3" },
 };
 
+
 const MG: MGKey[] = ["Chest","Back","Shoulders","Quads","Hamstrings","Biceps","Triceps","Calves"];
 const SAFE5 = [0,0,0,0,0];
 function isSeriesOK(a: any): a is number[] {
@@ -58,8 +67,66 @@ export default function ProgressScreen() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [insight, setInsight] = useState<{ advice?: string[] } | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const [refreshing, setRefreshing] = useState(false);
   
+  useEffect(() => {
+    (async () => {
+      if (!uid) return;
+      try {
+        const latestRef = doc(db, "userInsights", "latest", "byUser", uid);
+        const snap = await getDoc(latestRef);
+        setInsight(snap.exists() ? (snap.data() as any) : null);
+      } catch {
+        // ignore
+      }
+    })();
+  }, [uid, stats?.totals]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!uid) return;
+      let active = true;
+      (async () => {
+        setLoading(true);
+        try {
+          const s = await computeUserStats(uid, false);
+          if (active) setStats(s);
+          saveUserStats(uid, s).catch(() => {});
+        } catch (e) {
+          if (active) {
+            setStats(null);
+            Alert.alert("Error", "No se pudieron calcular las estadísticas.");
+          }
+        } finally {
+          if (active) setLoading(false);
+        }
+      })();
+      return () => { active = false; };
+    }, [uid])
+  );
+
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = watchAndComputeUserStats(uid, (s) => {
+      setStats(s);
+    }, { backfill: false, save: true });
+    return () => unsub();
+  }, [uid]);
+
+  const onRefresh = useCallback(async () => {
+    if (!uid) return;
+    setRefreshing(true);
+    try {
+      const s = await computeUserStats(uid, false);
+      setStats(s);
+      saveUserStats(uid, s).catch(() => {});
+    } catch (e) {
+      Alert.alert("Error", "No se pudieron recalcular las estadísticas.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [uid]);
+
   const loadStatsAndInsights = useCallback(async () => {
     if (!uid) return;
     setLoading(true);
@@ -129,10 +196,11 @@ export default function ProgressScreen() {
     };
   }, [ready, stats]);
 
-    const onExport = async () => {
-  if (!uid || !stats) return;
+  const onExport = async () => {
+  if (!stats || !user?.id) return;
   try {
-    const uri = await exportProgressPDF(uid, stats, insight?.advice); // ⬅️ aquí
+    const name = user?.nombre || user?.email || "Usuario";
+    const uri =  await exportProgressPDF(user.id, stats, insight?.advice ?? [], name);
     Alert.alert("Exportado", `PDF listo.\n${uri}`);
   } catch (e) {
     console.log("export error:", e);
@@ -144,10 +212,6 @@ export default function ProgressScreen() {
     () => (stats ? stats.decreased : []),
     [stats]
   );
-
-  // const onExport = () => {
-  //   Alert.alert("Progress report", "Export placeholder (PDF/CSV próximamente).");
-  // };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
