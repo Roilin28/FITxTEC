@@ -4,7 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import colors from "../src/theme/color";
 
 type SetData = { set: number; reps: number; weight: number; done: boolean };
-type Props = { title: string; sets: number; restSec?: number };
+type Props = { 
+  title: string; 
+  sets: number; 
+  restSec?: number;
+  initialData?: SetData[];
+  onDataChange?: (data: SetData[]) => void;
+};
 
 /** Tamaños y layout */
 const ROW_H = 40;          // alto de fila (más compacto)
@@ -15,31 +21,75 @@ const GUTTER = 10;         // separación entre columnas
 /** proporciones de columnas (Set chico, Reps/Weight amplios) */
 const COL = { set: 0.5, reps: 1.5, weight: 1.5, done: 0.8 };
 
-export default function ExerciseCard({ title, sets, restSec = 120 }: Props) {
-  const [rows, setRows] = useState<SetData[]>(
-    Array.from({ length: sets }, (_, i) => ({
+export default function ExerciseCard({ title, sets, restSec = 120, initialData, onDataChange }: Props) {
+  // Inicializar con initialData o valores por defecto
+  const getInitialState = () => {
+    if (initialData && initialData.length > 0) {
+      return initialData;
+    }
+    return Array.from({ length: sets }, (_, i) => ({
       set: i + 1,
       reps: 8,
       weight: 40,
       done: false,
-    }))
-  );
+    }));
+  };
+
+  const [rows, setRows] = useState<SetData[]>(getInitialState);
+
+  // Sincronizar con initialData si cambia, pero solo si es diferente
+  React.useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      // Solo actualizar si realmente cambió para evitar loops
+      setRows((prev) => {
+        const hasChanged = prev.length !== initialData.length || 
+          prev.some((p, i) => 
+            p.reps !== initialData[i]?.reps || 
+            p.weight !== initialData[i]?.weight || 
+            p.done !== initialData[i]?.done
+          );
+        return hasChanged ? initialData : prev;
+      });
+    }
+  }, [initialData]);
 
   const completed = useMemo(() => rows.filter((r) => r.done).length, [rows]);
 
-  const bump = (idx: number, key: "reps" | "weight", delta: number) => {
-    setRows((prev) =>
-      prev.map((r, i) =>
-        i === idx ? { ...r, [key]: Math.max(0, (r as any)[key] + delta) } : r
-      )
-    );
-  };
+  // Usar una referencia para el callback para evitar problemas de dependencias
+  const onDataChangeRef = React.useRef(onDataChange);
+  React.useEffect(() => {
+    onDataChangeRef.current = onDataChange;
+  }, [onDataChange]);
 
-  const toggleDone = (idx: number) => {
-    setRows((prev) =>
-      prev.map((r, i) => (i === idx ? { ...r, done: !r.done } : r))
-    );
-  };
+  // Usar useCallback para evitar recrear las funciones en cada render
+  const bump = React.useCallback((idx: number, key: "reps" | "weight", delta: number) => {
+    setRows((prev) => {
+      const updated = prev.map((r, i) =>
+        i === idx ? { ...r, [key]: Math.max(0, (r as any)[key] + delta) } : r
+      );
+      // Llamar onDataChange usando la referencia después del update
+      // Usar queueMicrotask para ejecutar después de que React termine el update
+      if (onDataChangeRef.current) {
+        queueMicrotask(() => {
+          onDataChangeRef.current?.(updated);
+        });
+      }
+      return updated;
+    });
+  }, []);
+
+  const toggleDone = React.useCallback((idx: number) => {
+    setRows((prev) => {
+      const updated = prev.map((r, i) => (i === idx ? { ...r, done: !r.done } : r));
+      // Llamar onDataChange usando la referencia después del update
+      if (onDataChangeRef.current) {
+        queueMicrotask(() => {
+          onDataChangeRef.current?.(updated);
+        });
+      }
+      return updated;
+    });
+  }, []);
 
   return (
     <View style={styles.card}>

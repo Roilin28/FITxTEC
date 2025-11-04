@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "firebase-mcp": {
+      "command": "npx",
+      "args": ["--yes", "@flowhunt/firebase-mcp@latest"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "C:/Users/luisu/Downloads/fitxtec-firebase-adminsdk-fbsvc-a197bc1b54.json",
+        "FIREBASE_PROJECT_ID": "fitxtec",
+        "FIREBASE_API_KEY": "AIzaSyDGfupRcSBp-lszXz8onMQEHI3V-rYzT0U"
+      }
+    }
+  }
+}

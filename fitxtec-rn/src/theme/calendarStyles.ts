@@ -24,6 +24,25 @@ export const calendarStyles = StyleSheet.create({
     header: { marginBottom: 16 },
     headerTitle: { color: "#fff", fontSize: 20, fontWeight: "700" },
     headerSubtitle: { color: "#999", fontSize: 13, marginTop: 4 },
+    monthNavigator: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    navButton: {
+        padding: 8,
+    },
+    monthDisplay: {
+        flex: 1,
+        alignItems: "center",
+    },
+    monthText: {
+        color: "#fff",
+        fontSize: 18,
+        fontWeight: "600",
+        textTransform: "capitalize",
+    },
     calendar: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -45,6 +64,8 @@ export const calendarStyles = StyleSheet.create({
     dayText: { color: "#fff", fontSize: 13 },
     dayCompleted: { backgroundColor: "#1f2a1f", borderColor: "#7EE300" },
     daySelected: { borderColor: "#00FF6A", backgroundColor: "#212c1f" },
+    dayToday: { borderColor: "#FFA500", borderWidth: 2 },
+    dayTodayText: { color: "#FFA500", fontWeight: "700" },
 
     // Summary card
     summaryCard: {

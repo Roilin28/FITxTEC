@@ -5,6 +5,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Platform,
+  ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
@@ -49,7 +52,7 @@ export default function LoginScreen() {
         setError("Credenciales inválidas");
       } else {
         console.log("Login: ", user, user.id);
-        setUser(user);
+        await setUser(user);
         navigation.reset({
           index: 0,
           routes: [{ name: "Tabs" as keyof RootStackParamList }],
@@ -69,6 +72,11 @@ export default function LoginScreen() {
     console.log("Google sign-in");
   };
 
+  const onApple = () => {
+    // TODO: implementar Apple Sign In (expo-apple-authentication)
+    console.log("Apple sign-in");
+  };
+
   const onSignup = () => {
     // TODO: navegar a SignUp
     console.log("Go to SignUp");
@@ -77,13 +85,23 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        {/* Título */}
-        <Text style={styles.title}>FITxTEC</Text>
-        <Text style={styles.subtitle}>Track your fitness progress</Text>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            {/* Título */}
+            <Text style={styles.title}>FITxTEC</Text>
+            <Text style={styles.subtitle}>Track your fitness progress</Text>
 
-        {/* Card */}
-        <View style={styles.card}>
+            {/* Card */}
+            <View style={styles.card}>
           {/* Email */}
           <View style={styles.inputWrapper}>
             <TextInput
@@ -150,6 +168,25 @@ export default function LoginScreen() {
             <Text style={styles.googleText}>Continue with Google</Text>
           </TouchableOpacity>
 
+          {/* Apple (solo iOS) */}
+          {Platform.OS === "ios" && (
+            <TouchableOpacity
+              onPress={onApple}
+              activeOpacity={0.9}
+              style={[styles.googleBtn, { marginTop: 12 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Continue with Apple"
+            >
+              <FontAwesome
+                name="apple"
+                size={18}
+                color={colors.text}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.googleText}>Continue with Apple</Text>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={onSignup} accessibilityRole="link">
@@ -157,7 +194,9 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+        </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -166,15 +205,25 @@ const RADIUS = 16;
 const ROW_H = 44; // misma altura para inputs y botones
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-
-  // centra el “stack” vertical y da espacio arriba como en el mockup
-  container: {
+  safe: {
     flex: 1,
+    backgroundColor: colors.bg,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
+  // centra el "stack" vertical y da espacio arriba como en el mockup
+  container: {
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 48,
     backgroundColor: colors.bg,
+    minHeight: "100%",
+    justifyContent: "center",
   },
 
   // título verde y subtítulo
@@ -184,18 +233,18 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.5,
     marginTop: 6,
+    marginBottom: 8,
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 16,
-    marginTop: 6,
-    marginBottom: 22,
+    marginBottom: 32,
   },
 
   // card centrada, ancho similar al mockup, borde y radio suaves
   card: {
     width: "100%",
-    maxWidth: 360, // <- hace que se vea “estrecho” como tu diseño
+    maxWidth: 360,
     backgroundColor: colors.card,
     borderRadius: RADIUS,
     padding: 18,

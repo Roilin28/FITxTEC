@@ -13,7 +13,6 @@ import {
   where
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { auth } from "./firebase";
 
 
 /* ================== Interfaces ================== */
@@ -235,7 +234,7 @@ function isValidAiRoutine(x: any): x is AiRoutineJSON {
       typeof r.nombre !== "string" ||
       typeof r.cantidadDias !== "number" ||
       typeof r.tiempoAproximado !== "string" ||
-      !["Beginner","Intermediate","Advanced"].includes(r.nivelDificultad) ||
+      !["Beginner", "Intermediate", "Advanced"].includes(r.nivelDificultad) ||
       typeof r.descripcion !== "string"
     ) return false;
     for (const d of x.dias) {
@@ -293,7 +292,7 @@ export { isValidAiRoutine };
 export async function saveRoutineFromAI(ai: AiRoutineJSON, userId?: string): Promise<string> {
   if (!isValidAiRoutine(ai)) throw new Error("AI JSON inválido");
 
-  const uid = userId ?? auth.currentUser?.uid ?? "anon";
+  const uid = userId ?? "anon";
 
   // 1) Guarda doc principal en savedRoutines
   const ref = await addDoc(savedRoutinesCol(), {
@@ -335,4 +334,137 @@ export async function listRutinasForUser(userId: string) {
   const q = query(rutinasCol(), where("userId", "==", userId));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Rutina) }));
+}
+
+/**
+ * Obtiene una rutina AI guardada (desde savedRoutines) con todos sus detalles
+ */
+export async function getSavedRoutineDeep(rutinaId: string): Promise<RutinaCompleta | null> {
+  const snap = await getDoc(doc(savedRoutinesCol(), rutinaId));
+  if (!snap.exists()) return null;
+
+  const r = { id: snap.id, ...(snap.data() as Rutina) };
+
+  const diasSnap = await getDocs(savedDiasCol(rutinaId));
+  const diasOrdered = diasSnap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as DiaRutina) }))
+    .sort((a, b) => Number(a.id) - Number(b.id));
+
+  const dias = await Promise.all(
+    diasOrdered.map(async (dia) => {
+      const ejSnap = await getDocs(savedEjerciciosCol(rutinaId, dia.id));
+      const ejercicios = ejSnap.docs.map((e) => ({
+        id: e.id,
+        ...(e.data() as EjercicioDia),
+      }));
+      return { ...dia, ejercicios };
+    })
+  );
+
+  return { ...r, dias };
+}
+
+/**
+ * Lista todas las rutinas AI de un usuario (desde savedRoutines donde userId coincide)
+ */
+export async function listAiRoutinesForUser(userId: string): Promise<Array<{ id: string } & Rutina>> {
+  const q = query(savedRoutinesCol(), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as Rutina) }));
+}
+
+/**
+ * Verifica si una rutina es AI (existe en savedRoutines con userId)
+ */
+export async function isAiRoutine(rutinaId: string, userId?: string): Promise<boolean> {
+  try {
+    const snap = await getDoc(doc(savedRoutinesCol(), rutinaId));
+    if (!snap.exists()) return false;
+    const data = snap.data() as Rutina & { userId?: string };
+    // Si tiene userId, es una rutina AI
+    if (data.userId) {
+      // Si se proporciona userId, verificar que coincida
+      if (userId) {
+        return data.userId === userId;
+      }
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Obtiene una rutina (ya sea normal o AI) con todos sus detalles
+ * Intenta primero como rutina normal, luego como rutina AI
+ */
+export async function getRutinaDeepOrAi(rutinaId: string, userId?: string): Promise<RutinaCompleta | null> {
+  // Primero intentar como rutina normal
+  const rutinaNormal = await getRutinaDeep(rutinaId);
+  if (rutinaNormal) return rutinaNormal;
+
+  // Si no existe, intentar como rutina AI
+  const rutinaAI = await getSavedRoutineDeep(rutinaId);
+  if (rutinaAI) {
+    // Si se proporciona userId, verificar que sea del usuario
+    if (userId) {
+      const isAi = await isAiRoutine(rutinaId, userId);
+      if (!isAi) return null;
+    }
+    return rutinaAI;
+  }
+
+  return null;
+}
+
+/**
+ * Elimina una rutina AI (desde savedRoutines) con todas sus subcolecciones
+ */
+export async function deleteSavedRoutine(rutinaId: string) {
+  // 1) borrar ejercicios de cada día (en batches)
+  const diasSnap = await getDocs(savedDiasCol(rutinaId));
+
+  // Borramos en lotes para no pasar el límite de 500 operaciones por batch
+  const commitBatches = async (ops: Array<() => void>) => {
+    // Ejecuta en chunks de 450 (margen)
+    const CHUNK = 450;
+    for (let i = 0; i < ops.length; i += CHUNK) {
+      const batch = writeBatch(db);
+      ops.slice(i, i + CHUNK).forEach((fn) => fn.call({ batch }));
+      // @ts-ignore - accedemos batch vía closure
+      await batch.commit();
+    }
+  };
+
+  const ops: Array<() => void> = [];
+
+  for (const diaDoc of diasSnap.docs) {
+    const diaId = diaDoc.id;
+    const ejSnap = await getDocs(savedEjerciciosCol(rutinaId, diaId));
+
+    // borrar ejercicios
+    ejSnap.docs.forEach((e) => {
+      const delRef = doc(db, `savedRoutines/${rutinaId}/dias/${diaId}/ejercicios/${e.id}`);
+      ops.push(function () {
+        // @ts-ignore
+        this.batch.delete(delRef);
+      });
+    });
+
+    // borrar el día
+    const delDiaRef = doc(db, `savedRoutines/${rutinaId}/dias/${diaId}`);
+    ops.push(function () {
+      // @ts-ignore
+      this.batch.delete(delDiaRef);
+    });
+  }
+
+  // ejecutar borrado de subcolecciones y días
+  if (ops.length > 0) {
+    await commitBatches(ops);
+  }
+
+  // 2) borrar el documento de rutina AI
+  await deleteDoc(doc(savedRoutinesCol(), rutinaId));
 }

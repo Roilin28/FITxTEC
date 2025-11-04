@@ -34,7 +34,7 @@ const chartConfig = {
 type RootStackParamList = {
   Home: undefined;
   User: undefined;
-  Workout: { routineId: string };
+  WorkoutDetail: { routineId: string };
   Routines: undefined;
   RoutineDetails: { routineId: string };
 };

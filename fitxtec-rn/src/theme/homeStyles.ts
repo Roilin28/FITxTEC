@@ -52,19 +52,44 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
 
-    // Weekly progress
-    progressSection: {
+    // Quick Stats Section
+    statsSection: {
         marginTop: 15,
         marginBottom: 20,
     },
-    sectionTitle: {
+    statsRow: {
+        flexDirection: "row",
+        gap: 12,
+        marginBottom: 12,
+    },
+    statCard: {
+        flex: 1,
+        backgroundColor: "#15171f",
+        borderRadius: 14,
+        padding: 16,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#2c2f36",
+    },
+    statValue: {
         color: "#fff",
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: "700",
-        marginBottom: 8,
+        marginTop: 8,
+        marginBottom: 4,
+    },
+    statLabel: {
+        color: "#9ca3af",
+        fontSize: 12,
+        fontWeight: "500",
+    },
+    progressRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
     },
     progressContainer: {
-        width: "100%",
+        flex: 1,
         height: 8,
         backgroundColor: "#222",
         borderRadius: 5,
@@ -75,10 +100,18 @@ const styles = StyleSheet.create({
         backgroundColor: "#7EE300",
         borderRadius: 5,
     },
-    progressLabel: {
-        color: "#999",
-        fontSize: 13,
-        marginTop: 6,
+    progressPercentage: {
+        color: "#7EE300",
+        fontSize: 14,
+        fontWeight: "700",
+        minWidth: 40,
+        textAlign: "right",
+    },
+    sectionTitle: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "700",
+        marginBottom: 8,
     },
 
     // AI recommendation card
@@ -132,8 +165,20 @@ const styles = StyleSheet.create({
     workoutContainer: {
         backgroundColor: "#15171f",
         borderRadius: 20,
-        padding: 20,
         marginBottom: 20,
+        overflow: "hidden",
+    },
+    workoutBackgroundImage: {
+        opacity: 0.4,
+    },
+    workoutOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(21, 23, 31, 0.75)",
+    },
+    workoutContent: {
+        padding: 20,
+        position: "relative",
+        zIndex: 1,
     },
     header: {
         flexDirection: "row",
