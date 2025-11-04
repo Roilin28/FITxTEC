@@ -18,7 +18,6 @@ import SettingsScreen from "../screens/SettingsScreen";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Stack Navigator for Home tab
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -29,7 +28,6 @@ function HomeStack() {
   );
 }
 
-// Stack Navigator for Routines tab
 function RoutinesStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -40,7 +38,6 @@ function RoutinesStack() {
   );
 }
 
-// Stack Navigator for Workout tab
 function WorkoutStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -50,7 +47,6 @@ function WorkoutStack() {
   );
 }
 
-// Stack Navigator for Profile tab
 function ProfileStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
